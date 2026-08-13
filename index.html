@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riverton & Associates, Inc. — Applied AI, Data & Software Engineering</title>
+<meta name="description" content="Riverton & Associates researches, designs, develops and implements production software and AI systems. Data engineering, advanced analytics, model design, production AI architecture, and IT management services. Austin, Texas.">
+<link rel="canonical" href="https://riverton-assoc.com/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0C1317" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F7F6F3" media="(prefers-color-scheme: light)">
+<meta name="author" content="Riverton &amp; Associates, Inc.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Riverton &amp; Associates, Inc.">
+<meta property="og:title" content="Riverton & Associates, Inc. — Applied AI, Data & Software Engineering">
+<meta property="og:description" content="Riverton & Associates researches, designs, develops and implements production software and AI systems. Data engineering, advanced analytics, model design, production AI architecture, and IT management services. Austin, Texas.">
+<meta property="og:url" content="https://riverton-assoc.com/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  /* minimal reset -- the artifact runtime supplies one; a real page must declare it */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+
+:root {
+    --ground:#0C1317; --surface:#111B20; --raised:#16232A;
+    --ink:#E9EEEC; --muted:#869693; --faint:#5E6E6B;
+    --line:#1F2E34; --line-2:#2A3C43;
+    --accent:#E06B4F; --accent-d:#C4573C; --data:#5FA89C; --warn:#D9A441;
+
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+
+    --col:1180px; --measure:62ch;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground:#F7F6F3; --surface:#FFFFFF; --raised:#F1EFEB;
+      --ink:#10171A; --muted:#5B6A67; --faint:#7E8C89;
+      --line:#E0DDD7; --line-2:#CFCBC3;
+      --accent:#C4553A; --accent-d:#A8462E; --data:#2E7A6D; --warn:#9A6B12;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#F7F6F3; --surface:#FFFFFF; --raised:#F1EFEB;
+    --ink:#10171A; --muted:#5B6A67; --faint:#7E8C89;
+    --line:#E0DDD7; --line-2:#CFCBC3;
+    --accent:#C4553A; --accent-d:#A8462E; --data:#2E7A6D; --warn:#9A6B12;
+  }
+  :root[data-theme="dark"] {
+    --ground:#0C1317; --surface:#111B20; --raised:#16232A;
+    --ink:#E9EEEC; --muted:#869693; --faint:#5E6E6B;
+    --line:#1F2E34; --line-2:#2A3C43;
+    --accent:#E06B4F; --accent-d:#C4573C; --data:#5FA89C; --warn:#D9A441;
+  }
+
+  .page { background:var(--ground); color:var(--ink); font-family:var(--sans);
+          font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:var(--col); margin:0 auto; padding:0 clamp(1.1rem,4vw,2.5rem); }
+  a { color:inherit; }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+  .eyebrow { font-family:var(--mono); font-size:.7rem; letter-spacing:.2em;
+             text-transform:uppercase; color:var(--accent); font-weight:600; }
+  .sec-no { font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; color:var(--faint); }
+
+  /* ---------- nav / tabs ---------- */
+  .nav { position:sticky; top:0; z-index:40; background:var(--ground);
+         border-bottom:1px solid var(--line); }
+  .nav-top { max-width:var(--col); margin:0 auto; padding:.8rem clamp(1.1rem,4vw,2.5rem);
+             display:flex; align-items:center; gap:1.2rem; }
+  .mark { display:flex; align-items:center; gap:.7rem; margin-right:auto; }
+  .mono-badge { font-family:var(--serif); font-size:1.05rem; font-weight:700; line-height:1;
+                border-top:2px solid var(--accent); border-left:2px solid var(--accent);
+                padding:.26rem .5rem .16rem; }
+  .mono-badge em { color:var(--accent); font-style:normal; }
+  .wordmark { font-size:.76rem; font-weight:700; letter-spacing:.15em; }
+  .wordmark em { color:var(--accent); font-style:normal; }
+  @media (max-width:560px){ .wordmark{ display:none } }
+
+  .tabrow { max-width:var(--col); margin:0 auto; padding:0 clamp(1.1rem,4vw,2.5rem);
+            display:flex; align-items:center; gap:1rem; }
+  .tabs { display:flex; gap:.3rem; overflow-x:auto; scrollbar-width:none; flex:1 1 auto;
+          min-width:0; }   /* min-width:0 lets the flex item shrink so overflow-x can engage */
+  .tabs::-webkit-scrollbar { display:none }
+  .icon-actions.top { flex:none; padding:.25rem 0; }
+  .icon-btn.sm { width:32px; height:32px; }
+  .icon-btn.sm svg { width:15px; height:15px; }
+  .icon-btn.sm::after { bottom:auto; top:calc(100% + 8px); }
+  .tab { font-family:var(--mono); font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
+         color:var(--muted); background:none; border:0; border-bottom:2px solid transparent;
+         padding:.7rem .85rem; cursor:pointer; white-space:nowrap; font-weight:600;
+         transition:color .16s ease, border-color .16s ease; }
+  .tab:hover { color:var(--ink); }
+  .tab[aria-selected="true"] { color:var(--accent); border-bottom-color:var(--accent); }
+
+  .btn { font-family:var(--mono); font-size:.74rem; letter-spacing:.1em; text-transform:uppercase;
+         text-decoration:none; font-weight:600; padding:.78rem 1.3rem; border:1px solid var(--accent);
+         background:var(--accent); color:#FFF7F4; cursor:pointer; display:inline-block;
+         transition:background .18s ease; }
+  .btn:hover { background:var(--accent-d); border-color:var(--accent-d); }
+  .btn.ghost { background:transparent; color:var(--ink); border-color:var(--line-2); }
+  .btn.ghost:hover { border-color:var(--accent); color:var(--accent); background:transparent; }
+  @media (max-width:760px){ .nav-top .btn { display:none } }
+
+  /* ---------- views ---------- */
+  .view { display:none; }
+  .view.active { display:block; animation:fade .32s ease; }
+  @keyframes fade { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+
+  .lead { padding:clamp(2.8rem,7vw,5rem) 0 clamp(1.6rem,4vw,2.6rem); }
+  .lead h1 { font-family:var(--serif); font-size:clamp(2.1rem,5vw,3.5rem); line-height:1.08;
+             font-weight:600; letter-spacing:-.018em; margin:1rem 0 0; text-wrap:balance; }
+  .lead h1 .hl { color:var(--accent); font-style:italic; }
+  .lead .lede { margin:1.2rem 0 0; max-width:var(--measure); font-size:1.05rem; color:var(--muted); }
+  .lead .lede + .lede { margin-top:.85rem; }
+
+  section { padding:clamp(2.6rem,6vw,4.6rem) 0; border-top:1px solid var(--line); }
+  .sec-head { display:flex; align-items:baseline; gap:1rem; margin-bottom:.85rem; }
+  h2 { font-family:var(--serif); font-weight:600; font-size:clamp(1.6rem,3.2vw,2.35rem);
+       line-height:1.14; letter-spacing:-.012em; margin:0; text-wrap:balance; }
+  .sec-lede { color:var(--muted); max-width:var(--measure); margin:0 0 2.2rem; }
+  h3.sub { font-family:var(--serif); font-size:1.25rem; font-weight:600; margin:0 0 .8rem; }
+
+  /* ---------- hero split ---------- */
+  .split { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+           gap:clamp(1.8rem,5vw,3.5rem); align-items:start; }
+  @media (max-width:940px){ .split { grid-template-columns:1fr } }
+
+  .panel { background:var(--surface); border:1px solid var(--line); }
+  .panel-bar { display:flex; align-items:center; gap:.55rem; padding:.7rem .95rem;
+               border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.66rem;
+               letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
+  .dot { width:6px; height:6px; background:var(--data); border-radius:50%; }
+  .dot.live { animation:pulse 2s ease-in-out infinite }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+  .panel-bar .tag { margin-left:auto; }
+
+  .prob { padding:1.2rem; font-family:var(--mono); font-size:.82rem; }
+  .prob .stage-l { font-size:.63rem; letter-spacing:.16em; text-transform:uppercase;
+                   color:var(--faint); margin-bottom:.45rem; }
+  .prob .txt { color:var(--ink); font-size:.92rem; line-height:1.5; }
+  .prob .txt.mut { color:var(--muted); }
+  .prob .flow { text-align:center; color:var(--accent); padding:.75rem 0 .55rem; }
+  .prob .out { border:1px solid var(--accent);
+               background:color-mix(in srgb, var(--accent) 8%, transparent); padding:.85rem .95rem; }
+  .prob .out .txt { color:var(--data); }
+  .sector-pill { display:inline-block; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+                 color:var(--accent); border:1px solid var(--line-2); padding:.2rem .5rem; margin-bottom:.8rem; }
+
+  .stats { display:flex; flex-wrap:wrap; gap:2.2rem; margin-top:2.4rem;
+           padding-top:1.5rem; border-top:1px solid var(--line); }
+  .stat .k { font-family:var(--mono); font-size:1.45rem; font-variant-numeric:tabular-nums; }
+  .stat .l { font-size:.73rem; color:var(--faint); margin-top:.15rem; max-width:20ch; }
+
+  /* ---------- grids ---------- */
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);
+           border:1px solid var(--line); }
+  .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line);
+           border:1px solid var(--line); }
+  @media (max-width:900px){ .grid3{ grid-template-columns:repeat(2,1fr) } }
+  @media (max-width:620px){ .grid3,.grid2{ grid-template-columns:1fr } }
+  .cell { background:var(--ground); padding:1.45rem 1.35rem 1.55rem;
+          display:flex; flex-direction:column; gap:.5rem; transition:background .18s ease; }
+  .cell:hover { background:var(--surface); }
+  .cell .n { font-family:var(--mono); font-size:.7rem; color:var(--accent); letter-spacing:.1em; }
+  .cell.result .metric { font-family:var(--mono); font-size:1.16rem; color:var(--accent);
+                         letter-spacing:-.01em; line-height:1.1; }
+  .cell.result .n { color:var(--faint); letter-spacing:.12em; text-transform:uppercase; font-size:.66rem; }
+  .cell.more { background:var(--surface); justify-content:center; }
+  .cell.more button { align-self:flex-start; }
+  .cell h3, .cell h4 { margin:0; font-size:1rem; font-weight:650; letter-spacing:-.004em; }
+  .cell p { margin:0; font-size:.87rem; color:var(--muted); }
+
+  /* ---------- steps (approach) ---------- */
+  .steps-list { display:flex; flex-direction:column; }
+  .stepitem { display:grid; grid-template-columns:auto minmax(0,1fr); gap:1.4rem;
+              padding:1.4rem 0; border-top:1px solid var(--line); }
+  .stepitem:last-child { border-bottom:1px solid var(--line); }
+  .stepitem .idx { font-family:var(--mono); font-size:1.5rem; color:var(--accent);
+                   line-height:1; padding-top:.15rem; font-variant-numeric:tabular-nums; }
+  .stepitem h4 { margin:0 0 .35rem; font-size:1.08rem; font-weight:650; }
+  .stepitem p { margin:0; color:var(--muted); font-size:.9rem; max-width:64ch; }
+  .stepitem ul { margin:.5rem 0 0; padding-left:1.05rem; color:var(--muted); font-size:.86rem; }
+  .stepitem li { margin:.18rem 0; }
+
+  /* ---------- track record ---------- */
+  .tr-row { display:grid; grid-template-columns:minmax(0,.28fr) minmax(0,.72fr); gap:1.4rem;
+            padding:1.15rem 0; border-top:1px solid var(--line); align-items:baseline; }
+  .tr-row:last-child { border-bottom:1px solid var(--line); }
+  @media (max-width:640px){ .tr-row{ grid-template-columns:1fr; gap:.3rem } }
+  .tr-row .org { font-family:var(--mono); font-size:.86rem; color:var(--accent); letter-spacing:.02em; }
+  .tr-row .what { color:var(--muted); font-size:.93rem; }
+  .tr-row .what strong { color:var(--ink); font-weight:600; }
+
+  /* ---------- reseller banner ---------- */
+  .partner {
+    display:grid; grid-template-columns:auto minmax(0,1fr); gap:1.3rem; align-items:center;
+    border:1px solid var(--accent); background:color-mix(in srgb, var(--accent) 7%, transparent);
+    padding:1.3rem 1.4rem; margin-bottom:2.4rem;
+  }
+  @media (max-width:680px){ .partner{ grid-template-columns:1fr } }
+  .partner .badge { font-family:var(--mono); font-size:.63rem; letter-spacing:.16em;
+                    text-transform:uppercase; color:var(--accent); border:1px solid var(--accent);
+                    padding:.45rem .7rem; white-space:nowrap; text-align:center; }
+  .partner p { margin:0; font-size:.95rem; color:var(--ink); }
+  .partner p em { color:var(--muted); font-style:normal; display:block; margin-top:.3rem; font-size:.87rem; }
+
+  /* ---------- pipeline ---------- */
+  .tier-label { font-family:var(--mono); font-size:.67rem; letter-spacing:.18em; text-transform:uppercase;
+                color:var(--faint); display:flex; align-items:center; gap:.8rem; margin:0 0 1rem; }
+  .tier-label::after { content:""; flex:1; height:1px; background:var(--line); }
+  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+           border:1px solid var(--line); }
+  @media (max-width:780px){ .steps{ grid-template-columns:repeat(2,1fr) } }
+  .step { background:var(--ground); padding:1.05rem 1rem 1.15rem; text-align:left; border:0;
+          border-top:2px solid transparent; color:inherit; font:inherit; cursor:pointer;
+          display:flex; flex-direction:column; gap:.32rem; transition:background .18s ease; }
+  .step:hover { background:var(--surface); }
+  .step[aria-selected="true"] { background:var(--surface); border-top-color:var(--accent); }
+  .step .sn { font-family:var(--mono); font-size:.69rem; color:var(--accent); }
+  .step .st { font-weight:650; font-size:.94rem; }
+  .step .sd { font-size:.79rem; color:var(--muted); }
+
+  .record { margin-top:1.4rem; border:1px solid var(--line); background:var(--surface); }
+  .record-head { display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem;
+                 border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.66rem;
+                 letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
+  .record-head .stage { color:var(--accent); }
+  .rec-scroll { overflow-x:auto; }
+  table.rec { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.79rem; min-width:620px; }
+  table.rec td { padding:.52rem 1rem; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.rec tr:last-child td { border-bottom:none; }
+  table.rec td.f { color:var(--muted); white-space:nowrap; }
+  table.rec td.v { color:var(--ink); }
+  table.rec td.v.new { color:var(--data); }
+  table.rec td.v.bad { color:var(--faint); text-decoration:line-through; }
+  table.rec td.v.alert { color:var(--warn); }
+
+  /* ---------- chat ---------- */
+  .chat { border:1px solid var(--line); background:var(--surface); }
+  .chat-body { padding:1.05rem; display:flex; flex-direction:column; gap:1rem; }
+  .msg { display:flex; flex-direction:column; gap:.32rem; }
+  .msg .who { font-family:var(--mono); font-size:.62rem; letter-spacing:.14em;
+              text-transform:uppercase; color:var(--faint); }
+  .msg.user .bub { background:var(--raised); border-left:2px solid var(--line-2);
+                   padding:.68rem .9rem; font-size:.9rem; }
+  .msg.bot .bub { border-left:2px solid var(--accent); padding:.68rem .9rem; font-size:.9rem; }
+  .msg.bot .bub strong { color:var(--accent); font-weight:650; }
+  .minitable { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:.77rem; margin-top:.55rem; }
+  .minitable td { padding:.26rem 0; border-bottom:1px dotted var(--line); }
+  .minitable td:last-child { text-align:right; color:var(--data); font-variant-numeric:tabular-nums; }
+  .minitable tr:last-child td { border-bottom:none; color:var(--ink); font-weight:600; }
+
+  /* ---------- cta / footer ---------- */
+  .cta { background:var(--surface); border-top:1px solid var(--line); }
+  .cta-in { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2rem; align-items:center;
+            padding:clamp(2.4rem,5vw,3.8rem) 0; }
+  @media (max-width:820px){ .cta-in{ grid-template-columns:1fr } }
+  .cta p { color:var(--muted); margin:.65rem 0 0; max-width:48ch; }
+  footer.site { border-top:1px solid var(--line); padding:2rem 0 2.8rem; }
+  .foot-in { display:flex; flex-wrap:wrap; gap:1rem 2.2rem; align-items:center; }
+  .foot-in .contact { font-family:var(--mono); font-size:.75rem; color:var(--muted);
+                      display:flex; flex-wrap:wrap; align-items:center; gap:.5rem 1.5rem; }
+  .contact-item { display:inline-flex; align-items:center; gap:.45rem;
+                  color:var(--muted); text-decoration:none; }
+  .contact-item svg { width:14px; height:14px; flex:none; color:var(--accent);
+                      transition:color .16s ease; }
+  a.contact-item:hover { color:var(--accent); }
+  a.contact-item:hover svg { color:var(--accent); }
+  a.contact-item:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+  /* icon-only actions */
+  .icon-actions { display:inline-flex; align-items:center; gap:.55rem; }
+  .icon-btn { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+              border:1px solid var(--line-2); background:transparent; color:var(--accent);
+              cursor:pointer; padding:0; position:relative;
+              transition:background .16s ease, border-color .16s ease, color .16s ease; }
+  .icon-btn svg { width:16px; height:16px; }
+  .icon-btn:hover { background:var(--accent); border-color:var(--accent); color:#FFF7F4; }
+  .icon-btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .icon-btn::after {
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%;
+    transform:translateX(-50%); white-space:nowrap;
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink); background:var(--raised); border:1px solid var(--line-2);
+    padding:.32rem .55rem; opacity:0; pointer-events:none; transition:opacity .16s ease;
+  }
+  .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity:1; }
+
+  /* Rivet — agent avatar */
+  .avatar { width:38px; height:38px; flex:none; }
+  .avatar.lg { width:46px; height:46px; }
+
+  /* chat dock */
+  .chatdock { position:fixed; right:clamp(.8rem,3vw,1.8rem); bottom:clamp(.8rem,3vw,1.8rem);
+              width:min(370px, calc(100vw - 1.6rem)); z-index:80;
+              background:var(--surface); border:1px solid var(--line-2);
+              box-shadow:0 18px 48px rgba(0,0,0,.34);
+              display:flex; flex-direction:column; max-height:min(560px, 82vh);
+              animation:dockin .26s ease; }
+  @keyframes dockin { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+  .chatdock[hidden] { display:none; }
+  .chatdock-head { display:flex; align-items:center; gap:.7rem; padding:.8rem .9rem;
+                   border-bottom:1px solid var(--line); }
+  .chatdock-head .nm { font-weight:700; font-size:.95rem; letter-spacing:-.01em; }
+  .chatdock-head .rl { font-family:var(--mono); font-size:.64rem; letter-spacing:.1em;
+                       text-transform:uppercase; color:var(--faint);
+                       display:flex; align-items:center; gap:.35rem; }
+  .chatdock-head .online { width:6px; height:6px; border-radius:50%; background:var(--data);
+                           animation:pulse 2s ease-in-out infinite; }
+  .chatdock .x { margin-left:auto; background:none; border:0; color:var(--faint);
+                 font-size:1.3rem; line-height:1; cursor:pointer; padding:.15rem .35rem; }
+  .chatdock .x:hover { color:var(--accent); }
+  .chatdock-body { padding:.9rem; overflow-y:auto; display:flex; flex-direction:column; gap:.75rem; }
+  .cm { display:flex; flex-direction:column; gap:.28rem; }
+  .cm .lbl { font-family:var(--mono); font-size:.6rem; letter-spacing:.14em;
+             text-transform:uppercase; color:var(--faint); }
+  .cm.bot .txt { border-left:2px solid var(--accent); padding:.6rem .75rem; font-size:.88rem; }
+  .cm.me { align-items:flex-end; }
+  .cm.me .txt { background:var(--raised); border-right:2px solid var(--line-2);
+                padding:.6rem .75rem; font-size:.88rem; max-width:88%; }
+  .chips { display:flex; flex-wrap:wrap; gap:.4rem; padding:0 .9rem .8rem; }
+  .chip { font-family:var(--mono); font-size:.68rem; color:var(--muted);
+          border:1px solid var(--line-2); background:transparent; padding:.4rem .6rem;
+          cursor:pointer; text-align:left; transition:border-color .16s, color .16s; }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .chatform { display:flex; gap:.4rem; padding:.7rem .9rem; border-top:1px solid var(--line); }
+  .chatform input { flex:1; background:var(--ground); border:1px solid var(--line-2);
+                    color:var(--ink); font-family:var(--sans); font-size:.86rem;
+                    padding:.55rem .65rem; }
+  .chatform input:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  .chatform button { border:1px solid var(--accent); background:var(--accent); color:#FFF7F4;
+                     padding:0 .8rem; cursor:pointer; display:inline-flex; align-items:center; }
+  .chatform button svg { width:15px; height:15px; }
+  .chatnote { font-family:var(--mono); font-size:.6rem; color:var(--faint);
+              padding:0 .9rem .7rem; letter-spacing:.04em; }
+
+  /* ---------- blog ---------- */
+  .postmeta { font-family:var(--mono); font-size:.65rem; letter-spacing:.12em;
+              text-transform:uppercase; color:var(--faint);
+              display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; }
+  .postmeta .cat { color:var(--accent); }
+  .lead-post { border:1px solid var(--line); background:var(--surface);
+               display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);
+               gap:clamp(1.2rem,3vw,2.4rem); padding:clamp(1.4rem,3vw,2.2rem); align-items:center; }
+  @media (max-width:820px){ .lead-post{ grid-template-columns:1fr } }
+  .lead-post h3 { font-family:var(--serif); font-size:clamp(1.4rem,2.8vw,2rem); font-weight:600;
+                  line-height:1.16; margin:.7rem 0 .6rem; letter-spacing:-.012em; text-wrap:balance; }
+  .lead-post p { margin:0; color:var(--muted); font-size:.95rem; }
+  .pull { border-left:2px solid var(--accent); padding:.5rem 0 .5rem 1rem;
+          font-family:var(--serif); font-style:italic; font-size:1.02rem; color:var(--ink); }
+  .cell.post h3 { font-family:var(--serif); font-size:1.14rem; font-weight:600; line-height:1.22;
+                  margin:.15rem 0 0; letter-spacing:-.008em; }
+  .cell.post p { font-size:.86rem; }
+  .cell.post .more { font-family:var(--mono); font-size:.66rem; letter-spacing:.1em;
+                     text-transform:uppercase; color:var(--accent); margin-top:auto; padding-top:.6rem; }
+  .foot-in .rights { margin-left:auto; font-family:var(--mono); font-size:.69rem; color:var(--faint); }
+
+  .note { font-family:var(--mono); font-size:.73rem; color:var(--faint); letter-spacing:.04em; }
+
+  /* Touch devices: raise every control to a 44px minimum tap target.
+     Desktop pointers keep the tighter sizing -- precision is not a problem there. */
+  @media (pointer: coarse), (max-width: 760px) {
+    .icon-btn, .icon-btn.sm { width:44px; height:44px; }
+    .icon-btn.sm svg { width:17px; height:17px; }
+    .tab { padding-top:.85rem; padding-bottom:.85rem; }
+    .chatform input { padding:.8rem .7rem; }
+    .chatform button { min-width:48px; justify-content:center; }
+    .chip { padding:.6rem .75rem; }
+    .chatdock .x { padding:.5rem .7rem; font-size:1.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,*::before,*::after { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <div class="nav-top">
+      <div class="mark">
+        <span class="mono-badge">R<em>&amp;</em>A</span>
+        <span class="wordmark">RIVERTON <em>&amp;</em> ASSOCIATES, INC.</span>
+      </div>
+      <a class="btn" href="mailto:***REMOVED-EMAIL***">Start a conversation</a>
+    </div>
+    <div class="tabrow">
+      <div class="tabs" role="tablist" aria-label="Sections">
+        <button class="tab" role="tab" data-view="home"        aria-selected="true">Home</button>
+        <button class="tab" role="tab" data-view="capabilities" aria-selected="false">Capabilities</button>
+        <button class="tab" role="tab" data-view="approach"    aria-selected="false">Approach</button>
+        <button class="tab" role="tab" data-view="platform"    aria-selected="false">CXO Nexus Platform</button>
+        <button class="tab" role="tab" data-view="blog"        aria-selected="false">Blog</button>
+        <button class="tab" role="tab" data-view="about"       aria-selected="false">About Us</button>
+      </div>
+      <span class="icon-actions top">
+        <a class="icon-btn sm" href="tel:***REMOVED-PHONE***" data-tip="Call us"
+           aria-label="Call Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg></a>
+        <a class="icon-btn sm" href="mailto:***REMOVED-EMAIL***" data-tip="Email us"
+           aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></a>
+        <button type="button" class="icon-btn sm js-chat-open" data-tip="Chat with Rivet"
+                aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg></button>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ==================== HOME ==================== -->
+  <div class="view active" id="view-home" role="tabpanel">
+    <header class="lead">
+      <div class="wrap split">
+        <div>
+          <div class="eyebrow">Research · Design · Develop · Implement</div>
+          <h1>We build software systems that solve <span class="hl">business problems.</span></h1>
+          <p class="lede">Most enterprise AI stalls at the pilot. It performs well in the deck,
+            then meets data that arrives late, contradicts itself, and was typed by a human — and
+            quietly stops being mentioned in the steering meeting.</p>
+          <p class="lede">We build the systems that get past that point and keep running. Data
+            engineering, advanced analytics, model design, and production AI architecture, for
+            organizations where the answer has to hold up.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.8rem">
+            <button class="btn" data-goto="approach">How we solve problems</button>
+            <button class="btn ghost" data-goto="capabilities">Our capabilities</button>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="k">$10M</div><div class="l">Annual saving, IBM&nbsp;/ AK Steel expert system</div></div>
+            <div class="stat"><div class="k">5</div><div class="l">Enterprise systems delivered into production</div></div>
+            <div class="stat"><div class="k">3</div><div class="l">Sectors of deep domain practice</div></div>
+          </div>
+        </div>
+
+        <div class="panel" aria-label="Business problems we solve, by sector">
+          <div class="panel-bar"><span class="dot live"></span> Problem → system → outcome
+            <span class="tag" id="sector-tag">1 / 3</span></div>
+          <div class="prob">
+            <span class="sector-pill" id="p-sector">Financial</span>
+            <div class="stage-l">The business problem</div>
+            <div class="txt mut" id="p-problem">—</div>
+            <div class="flow">↓</div>
+            <div class="stage-l">The system we build</div>
+            <div class="txt" id="p-system">—</div>
+            <div class="flow">↓</div>
+            <div class="out">
+              <div class="stage-l">Outcome</div>
+              <div class="txt" id="p-outcome">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Delivered results</h2></div>
+        <p class="sec-lede">Systems that went into production, ran against real operations, and
+          changed a number somebody was accountable for.</p>
+        <div class="grid3">
+          <div class="cell result">
+            <span class="metric">$10M saved annually</span>
+            <span class="n">IBM / AK Steel</span>
+            <p>An AI expert system that emulated the judgement of a 30-year veteran operator,
+               holding the line on decisions that had never been written down.</p>
+          </div>
+          <div class="cell result">
+            <span class="metric">Behavioral fraud detection</span>
+            <span class="n">USAA</span>
+            <p>Applied AI to fraud detection, scoring customer and transaction behavior rather
+               than relying on rules somebody had to think of first.</p>
+          </div>
+          <div class="cell result">
+            <span class="metric">Payroll processing rebuilt</span>
+            <span class="n">Alight Solutions</span>
+            <p>AI-driven efficiencies in a high-volume payroll operation, changing how the
+               processing itself worked rather than tuning around it.</p>
+          </div>
+          <div class="cell result">
+            <span class="metric">Enterprise-wide cybersecurity</span>
+            <span class="n">Charles Schwab</span>
+            <p>Machine learning applied across cybersecurity and infrastructure efficiency,
+               operating across the full production environment rather than a pilot slice.</p>
+          </div>
+          <div class="cell result">
+            <span class="metric">Enterprise spend management</span>
+            <span class="n">CXO Nexus</span>
+            <p>Built AI-driven enterprise spend management systems — the platform we now implement
+               for clients.</p>
+          </div>
+          <div class="cell result">
+            <span class="metric">Managed IT &amp; security</span>
+            <span class="n">IT Management Services</span>
+            <p>Service desk, identity and access management, endpoint and mobile device
+               management, Microsoft 365 and cloud migration, and 24/7 infrastructure
+               monitoring — delivered with our partner FSL World, a technology and security
+               practice operating since 2005.</p>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.5rem">
+          <button class="btn ghost" data-goto="about">The full record</button>
+          <button class="btn ghost" data-goto="capabilities">IT management services</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Why organizations partner with us</h2></div>
+        <div class="grid3">
+          <div class="cell">
+            <h3>Minimized risk of failure</h3>
+            <p>We work to identify tangible, measurable value early — before significant investment
+               is committed to an approach that cannot pay for itself.</p>
+          </div>
+          <div class="cell">
+            <h3>Results you can see in flight</h3>
+            <p>Measurable progress at every stage rather than a single reveal at the end, so
+               direction can be corrected while correcting is still cheap.</p>
+          </div>
+          <div class="cell">
+            <h3>A genuine partnership</h3>
+            <p>We work alongside your teams and transfer capability as we go. The goal is your
+               people owning the system, not a permanent dependency on ours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== CAPABILITIES ==================== -->
+  <div class="view" id="view-capabilities" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Capabilities</div>
+        <h1>Disciplines that <span class="hl">compound.</span></h1>
+        <p class="lede">An AI system is only as good as the model beneath it, the pipeline feeding
+          it, and the architecture holding it up. We practice all of it, because in production they
+          cannot be separated — and where a service is better delivered by specialists, we deliver
+          it through partners rather than pretend otherwise.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Core practice</h2></div>
+        <div class="grid3">
+          <div class="cell"><h3>Research &amp; problem framing</h3>
+            <p>Turning a vague business concern into a specific, measurable, solvable problem
+               statement with agreed success metrics.</p></div>
+          <div class="cell"><h3>Software design &amp; development</h3>
+            <p>Product and platform engineering from architecture through delivery and
+               implementation, built to be operated by your team.</p></div>
+          <div class="cell"><h3>Data engineering &amp; pipelines</h3>
+            <p>Ingestion, transformation, orchestration, labeling, and lineage at enterprise
+               volume — with the observability to prove what happened to every row.</p></div>
+          <div class="cell"><h3>Advanced analytics</h3>
+            <p>Statistical modeling, forecasting, and anomaly detection wired into operations
+               rather than parked in a quarterly report.</p></div>
+          <div class="cell"><h3>Model design</h3>
+            <p>Selecting, designing, training, and evaluating models against the business metric
+               that matters — not against a leaderboard.</p></div>
+          <div class="cell"><h3>Production AI architecture</h3>
+            <p>Training frameworks, deployment paths, monitoring, retraining loops, and the
+               governance to keep a system trustworthy after launch.</p></div>
+          <div class="cell"><h3>Information architecture</h3>
+            <p>Taxonomies, hierarchies, and canonical models designed to survive contact with
+               real, inconsistent, human-entered data.</p></div>
+          <div class="cell"><h3>Innovation &amp; thought leadership</h3>
+            <p>Applied research, innovation labs, and executive briefings on where AI pays back —
+               and where it convincingly does not.</p></div>
+          <div class="cell"><h3>Capability transfer</h3>
+            <p>Building cross-functional teams and training internal staff to lead AI and machine
+               learning work once we step back.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Sector depth</h2></div>
+        <p class="sec-lede">Domain knowledge is not optional. These are the industries where we
+          have built systems that went into production and stayed there.</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">Financial services</span><h3>Fraud, security, behavior</h3>
+            <p>Detecting fraudulent activity through user behavior analysis; security enhancement;
+               abnormal behavior analysis across accounts and transactions.</p></div>
+          <div class="cell"><span class="n">Insurance</span><h3>Claims and cost</h3>
+            <p>Streamlining claims processing, identifying anomalies in claims to cut cost, and
+               reducing leakage before payment.</p></div>
+          <div class="cell"><span class="n">Manufacturing</span><h3>Routing and uptime</h3>
+            <p>Optimizing production scheduling and routing for maximum efficiency, reducing
+               downtime and improving throughput.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>IT desktop support &amp; management</h2></div>
+
+        <div class="partner">
+          <div class="badge">Delivered<br>through partners</div>
+          <p>Riverton provides IT desktop support and management through our partner network.
+            <em>We scope the service, set the service levels, and stay accountable for delivery.
+            Partner organizations staff the desk. You hold one contract and one relationship,
+            not a chain of vendors pointing at each other.</em></p>
+        </div>
+
+        <p class="sec-lede">A tiered service desk with named management oversight, sized to your
+          seat count and governed against agreed service levels — backed by a partner practice
+          covering identity, endpoint, cloud, and security operations.</p>
+
+        <div class="grid3">
+          <div class="cell">
+            <span class="n">Tier 1</span><h3>Service desk</h3>
+            <p>Triage, password resets, account provisioning, software installation, and ticket
+               routing — the volume layer that keeps everything else free to work.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Tier 2</span><h3>Advanced support</h3>
+            <p>Operating system troubleshooting, hardware diagnostics, VPN configuration, mobile
+               device management, and network adjustments.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Tier 3</span><h3>Systems engineering</h3>
+            <p>Server and network incident response, cloud infrastructure, database issues, and
+               escalations that need an engineer rather than a script.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Project management</span><h3>Rollouts and change</h3>
+            <p>Deliverable tracking, rollout scheduling, resource coordination, and timeline
+               management for migrations and refresh programs.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Delivery management</span><h3>Oversight and governance</h3>
+            <p>Named senior oversight, service-level review, escalation ownership, and regular
+               performance reporting against what was agreed.</p>
+          </div>
+          <div class="cell" style="background:var(--surface)">
+            <span class="n">Engagement model</span><h3>Priced by seat block</h3>
+            <p>A fixed monthly retainer scaled in user blocks, with committed hours by tier.
+               Project and development work is quoted separately and approved in writing first.</p>
+          </div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.4rem">Also covered by the partner practice</p>
+        <div class="grid3">
+          <div class="cell">
+            <span class="n">Identity</span><h4>Access and governance</h4>
+            <p>Single sign-on, multi-factor authentication, full joiner–mover–leaver lifecycle,
+               and access reviews that satisfy an auditor.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Endpoint</span><h4>Devices and mobile</h4>
+            <p>Mobile device and application management, enrollment, conditional access, and
+               detection and response across every device on the network.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Cloud</span><h4>Microsoft 365 and migration</h4>
+            <p>Microsoft 365 and SharePoint, email migration from on-premises, and cloud
+               modernization of the wider estate.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Security operations</span><h4>Monitor and respond</h4>
+            <p>Around-the-clock infrastructure monitoring, security event monitoring with
+               automated response, and privileged access control.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Assessment</span><h4>Test and harden</h4>
+            <p>Web application and infrastructure penetration testing, email hardening, data loss
+               prevention, and security gap analysis.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Advisory</span><h4>Risk and compliance</h4>
+            <p>Risk assessment, compliance review, and a zero-trust roadmap that sequences the
+               work rather than presenting it all at once.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>We also implement spend analytics.</h2>
+          <p>Riverton is an implementation partner for the CXO Nexus enterprise spend analytics
+             platform, deploying it for clients who need spend visibility fast.</p>
+        </div>
+        <button class="btn" data-goto="platform">See the platform</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APPROACH ==================== -->
+  <div class="view" id="view-approach" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Approach to solving business problems</div>
+        <h1>A method designed to <span class="hl">not fail quietly.</span></h1>
+        <p class="lede">Eight steps, in order. Each one exists because skipping it is how AI and
+          machine learning programs usually die — expensively, and long after the point where
+          anyone could have corrected course.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>The method</h2></div>
+        <div class="steps-list">
+          <div class="stepitem"><div class="idx">01</div><div>
+            <h4>Clearly define the business problem</h4>
+            <p>Identify a specific, measurable challenge, align it with strategic goals, and define
+               what success will look like before any modeling begins.</p></div></div>
+          <div class="stepitem"><div class="idx">02</div><div>
+            <h4>Ensure data availability and quality</h4>
+            <p>Assess the relevant data honestly, establish its quality, and keep it current enough
+               to support continuous training.</p></div></div>
+          <div class="stepitem"><div class="idx">03</div><div>
+            <h4>Set up efficient data management</h4>
+            <p>Build a robust pipeline for acquisition, labeling, and updating, so the model is fed
+               by a process rather than by heroics.</p></div></div>
+          <div class="stepitem"><div class="idx">04</div><div>
+            <h4>Implement feedback loops</h4>
+            <p>Regular retraining and fine-tuning, with monitoring that tells you when performance
+               is drifting before your users do.</p></div></div>
+          <div class="stepitem"><div class="idx">05</div><div>
+            <h4>Establish training &amp; deployment processes</h4>
+            <p>A scalable training framework and a deployment path that makes shipping a model a
+               routine event rather than a project.</p></div></div>
+          <div class="stepitem"><div class="idx">06</div><div>
+            <h4>Develop in-house expertise</h4>
+            <p>Build cross-functional teams and train internal staff to lead the work, so capability
+               stays after the engagement ends.</p></div></div>
+          <div class="stepitem"><div class="idx">07</div><div>
+            <h4>Encourage innovation and experimentation</h4>
+            <p>Create the space — innovation labs, sanctioned experiments — for a culture that can
+               find the next opportunity itself.</p></div></div>
+          <div class="stepitem"><div class="idx">08</div><div>
+            <h4>Align initiatives with business strategy</h4>
+            <p>Keep every effort tied to core objectives, and drive stakeholder engagement to earn
+               real buy-in and sustained commitment.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>What the method delivers</h2></div>
+        <div class="grid3">
+          <div class="cell"><span class="n">Clarity</span><h3>A focused problem</h3>
+            <p>A measurable challenge worth solving, agreed before investment.</p></div>
+          <div class="cell"><span class="n">Readiness</span><h3>Data and process</h3>
+            <p>Data that is ready and well managed, with the internal processes to keep it that way.</p></div>
+          <div class="cell"><span class="n">Execution</span><h3>Iterative build</h3>
+            <p>Models built and refined iteratively and scalably, with feedback designed in.</p></div>
+        </div>
+        <p class="sec-lede" style="margin:2rem 0 0">The outcome is the point: improved security,
+          reduced cost, and measurably better operational efficiency — not a model that performs
+          well in a notebook.</p>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Let's begin with the problem.</h2>
+          <p>Bring us a business challenge and we will build a roadmap tailored to your
+             organization — starting with whether AI is the right answer at all.</p>
+        </div>
+        <a class="btn" href="mailto:***REMOVED-EMAIL***">Set up a conversation</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== PLATFORM (RESELLER) ==================== -->
+  <div class="view" id="view-platform" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
+        <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+        <p class="lede">Riverton &amp; Associates is an implementation partner for the CXO Nexus
+          enterprise spend analytics platform. We deploy it, integrate it with your source systems,
+          design the taxonomy it runs on, and make sure it produces answers your finance and
+          procurement teams will actually defend.</p>
+      </div>
+    </header>
+
+    <section style="border-top:0">
+      <div class="wrap">
+        <div class="partner">
+          <div class="badge">Platform by<br>CXO&nbsp;Nexus</div>
+          <p>The platform, its models, and its patented spend-management innovations are built and
+            owned by CXO Nexus.
+            <em>Riverton's role is implementation partner — onboarding, source-system
+            integration, taxonomy design, and the data engineering that gets your extracts into it
+            cleanly.</em></p>
+        </div>
+
+        <div class="sec-head"><h2>What the platform does</h2></div>
+        <p class="sec-lede">Nine operations that take raw accounts-payable extracts and turn them
+          into a governed, queryable view of every dollar. Select a stage to watch a single
+          transaction line change — the record is illustrative, the transformations are real.</p>
+
+        <p class="tier-label">Resolution layer</p>
+        <div class="steps" role="tablist" aria-label="Resolution stages">
+          <button class="step" role="tab" aria-selected="true" data-stage="0">
+            <span class="sn">01</span><span class="st">Cleanse</span>
+            <span class="sd">Strip control characters, repair encoding, drop malformed and duplicate rows.</span></button>
+          <button class="step" role="tab" aria-selected="false" data-stage="1">
+            <span class="sn">02</span><span class="st">Normalize</span>
+            <span class="sd">Collapse every spelling, abbreviation, and legal suffix into one canonical supplier.</span></button>
+          <button class="step" role="tab" aria-selected="false" data-stage="2">
+            <span class="sn">03</span><span class="st">Categorize</span>
+            <span class="sd">Map each line to a spend taxonomy with a confidence score and an audit trail.</span></button>
+          <button class="step" role="tab" aria-selected="false" data-stage="3">
+            <span class="sn">04</span><span class="st">Enrich</span>
+            <span class="sd">Append firmographics, ticker, geography, diversity status, and risk signals.</span></button>
+        </div>
+
+        <div class="record">
+          <div class="record-head"><span class="dot"></span> Transaction line
+            <span class="stage" id="stage-name">01 · Cleanse</span>
+            <span style="margin-left:auto" id="stage-note">4 fields</span></div>
+          <div class="rec-scroll"><table class="rec"><tbody id="rec-body"></tbody></table></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Intelligence layer</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">05</span><h4>Unmask the reseller</h4>
+            <p>See through the VAR, distributor, or marketplace to the manufacturer whose product
+               you actually bought.</p></div>
+          <div class="cell"><span class="n">06</span><h4>Corporate parentage</h4>
+            <p>Roll subsidiaries, acquisitions, and trading names up to the ultimate parent, so
+               leverage is measured against the entity you negotiate with.</p></div>
+          <div class="cell"><span class="n">07</span><h4>Rogue IT spend</h4>
+            <p>Surface technology purchased on expense cards and departmental budgets, entirely
+               outside the IT ledger.</p></div>
+          <div class="cell"><span class="n">08</span><h4>Abnormal spend</h4>
+            <p>Statistical outliers, duplicate payments, price variance across business units, and
+               invoices that break their own historical pattern.</p></div>
+          <div class="cell"><span class="n">09</span><h4>Natural-language agent</h4>
+            <p>Ask the question the way you would ask a colleague. The agent resolves entities,
+               applies parentage, and shows the rows behind the number.</p></div>
+          <div class="cell" style="background:var(--surface)"><span class="n">↳</span><h4>Governed throughout</h4>
+            <p>Every transformation is versioned and explainable — because a number you cannot
+               defend is a number you cannot use.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <div class="sec-head"><h2>Ask it like a colleague</h2></div>
+          <p class="sec-lede" style="margin-bottom:1.2rem">The agent sits on the governed layer, not
+            the raw extract. It knows which suppliers roll to the same parent, which are resellers,
+            and which spikes were true-ups — and it will show the lines that prove it.</p>
+          <p class="note">Illustrative exchange — figures are sample data.</p>
+        </div>
+        <div class="chat">
+          <div class="panel-bar"><span class="dot live"></span> Spend agent <span class="tag">governed layer</span></div>
+          <div class="chat-body">
+            <div class="msg user"><span class="who">Procurement lead</span>
+              <div class="bub">How much did we spend with Dell last year, including anything bought through resellers?</div></div>
+            <div class="msg bot"><span class="who">Agent</span>
+              <div class="bub">Direct spend with Dell entities was <strong>$4.18M</strong>. Including
+                hardware bought through resellers, true Dell-manufactured spend was
+                <strong>$6.42M</strong> — <strong>54%</strong> higher than the direct figure alone.
+                <table class="minitable">
+                  <tr><td>Dell Marketing L.P. (direct)</td><td>$3.41M</td></tr>
+                  <tr><td>Dell EMC (direct)</td><td>$0.77M</td></tr>
+                  <tr><td>via CDW — unmasked</td><td>$1.62M</td></tr>
+                  <tr><td>via Insight Enterprises — unmasked</td><td>$0.62M</td></tr>
+                  <tr><td>Total, ultimate parent</td><td>$6.42M</td></tr>
+                </table></div></div>
+            <div class="msg user"><span class="who">Procurement lead</span>
+              <div class="bub">Any of that bought outside IT?</div></div>
+            <div class="msg bot"><span class="who">Agent</span>
+              <div class="bub">Yes — <strong>$310K</strong> across 47 lines charged to Marketing,
+                Facilities, and three regional cost centers. Mostly workstations and monitors on
+                expense cards. None of it reached the IT asset register.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Bring us your messiest extract.</h2>
+          <p>Send a representative sample and we will run it through resolution and show you what
+             your spend actually looks like — before any commitment.</p>
+        </div>
+        <a class="btn" href="mailto:***REMOVED-EMAIL***">***REMOVED-EMAIL***</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BLOG ==================== -->
+  <div class="view" id="view-blog" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Blog</div>
+        <h1>Notes from the <span class="hl">build.</span></h1>
+        <p class="lede">Applied research, field notes, and opinions formed by doing the work —
+          what pays back, what quietly does not, and what we got wrong before we got it right.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="lead-post">
+          <div>
+            <div class="postmeta"><span class="cat">Applied AI</span><span>14 July 2026</span><span>8 min read</span></div>
+            <h3>Most AI programs die at step two</h3>
+            <p>Everyone agrees data quality matters, and almost nobody budgets for it. The failure is
+              rarely the model — it is committing to a twelve-month roadmap before anyone has
+              honestly assessed whether the data can support the question being asked.</p>
+          </div>
+          <div class="pull">If you cannot describe the business problem in one measurable sentence,
+            no amount of modeling will rescue it.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="grid3">
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Data engineering</span><span>2 June 2026</span></div>
+            <h3>The vendor name problem</h3>
+            <p>One supplier, forty-three spellings, and a finance team certain they know their top
+               ten. Why entity resolution is the least glamorous and most valuable thing in the
+               pipeline.</p>
+            <span class="more">Read →</span>
+          </div>
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Applied AI</span><span>19 May 2026</span></div>
+            <h3>Expert systems didn't go away</h3>
+            <p>Before the current wave, we captured how a thirty-year veteran made a judgement call
+               and ran it at scale. That pattern is still the highest-return AI most operations can
+               deploy.</p>
+            <span class="more">Read →</span>
+          </div>
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Spend intelligence</span><span>28 April 2026</span></div>
+            <h3>Rogue IT is a measurement problem</h3>
+            <p>Technology bought outside IT is not usually defiance. It is an expense line nobody
+               categorized, in a system nobody joined to the asset register.</p>
+            <span class="more">Read →</span>
+          </div>
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Agents</span><span>6 April 2026</span></div>
+            <h3>Agents that act, not agents that summarize</h3>
+            <p>A summary is a demo. An agent earns its place when it can take an action inside a
+               system of record and be held to the result.</p>
+            <span class="more">Read →</span>
+          </div>
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Model design</span><span>17 March 2026</span></div>
+            <h3>Optimizing for the wrong number</h3>
+            <p>A model that wins on the metric and loses on the outcome is a common and expensive
+               result. Choosing what to optimize is a business decision, not a technical one.</p>
+            <span class="more">Read →</span>
+          </div>
+          <div class="cell post">
+            <div class="postmeta"><span class="cat">Practice</span><span>25 February 2026</span></div>
+            <h3>Handing it over on purpose</h3>
+            <p>Designing an engagement so the client's team can run the system without us — and why
+               that produces better architecture than building it to keep.</p>
+            <span class="more">Read →</span>
+          </div>
+        </div>
+        <p class="note" style="margin-top:1.4rem">Sample entries — placeholder content shown for
+          layout. Real posts to be supplied.</p>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Working on something similar?</h2>
+          <p>If one of these is a problem you are living with, we would rather talk about yours
+             than write about ours.</p>
+        </div>
+        <button class="btn js-chat-open">Ask Rivet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ABOUT ==================== -->
+  <div class="view" id="view-about" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">About us</div>
+        <h1>A practice built on <span class="hl">finished work.</span></h1>
+        <p class="lede">Riverton &amp; Associates, Inc. is an Austin, Texas software and data
+          consultancy. We research, design, develop, and implement systems that solve defined
+          business problems — with deep expertise in data engineering, advanced analytics, model
+          design, and architecting AI systems for production.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>What we believe</h2></div>
+        <div class="grid2">
+          <div class="cell">
+            <h3>AI is a strategic asset, not a project</h3>
+            <p>Applied well, it unlocks value in data that was previously impractical to reach:
+               new products, better customer service, reduced risk, and materially more efficient
+               operations. It enables smarter decisions, made faster.</p>
+          </div>
+          <div class="cell">
+            <h3>Most efforts fail for avoidable reasons</h3>
+            <p>Lack of clarity about the problem, poor execution, or goals misaligned with the
+               business. Our methodology is built specifically to remove those failure modes
+               rather than to demonstrate technology.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Delivered work</h2></div>
+        <p class="sec-lede">Systems in production at organizations where the results were
+          measured. Several of this work also resulted in granted patents, but the patents are not
+          the point — the systems are still running.</p>
+        <div>
+          <div class="tr-row">
+            <div class="org">IBM / AK Steel</div>
+            <div class="what">AI expert system that emulated the judgement of a 30-year veteran
+              operator, saving <strong>$10 million annually</strong>.</div>
+          </div>
+          <div class="tr-row">
+            <div class="org">Alight Solutions</div>
+            <div class="what">Rebuilt how a high-volume payroll operation processed its work,
+              using AI to remove effort rather than to report on it.</div>
+          </div>
+          <div class="tr-row">
+            <div class="org">USAA</div>
+            <div class="what">Applied AI to <strong>fraud detection</strong>, learning each
+              customer's normal behavior so deviation could be scored continuously instead of
+              caught by a rule written in advance.</div>
+          </div>
+          <div class="tr-row">
+            <div class="org">Charles Schwab</div>
+            <div class="what">Machine learning across <strong>cybersecurity and infrastructure
+              efficiency</strong> — threat signal on one side, cost and capacity on the other.</div>
+          </div>
+          <div class="tr-row">
+            <div class="org">CXO Nexus</div>
+            <div class="what">Built <strong>AI-driven enterprise spend management systems</strong>
+              — resolving supplier identity, categorizing spend, and surfacing what the ledger hid.
+              We are also an implementation partner for the CXO Nexus platform.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Who we work with</h2></div>
+        <p class="sec-lede">We work directly with CIOs, CTOs, and CEOs in financial services,
+          insurance, and manufacturing — leaders accountable for productivity, competitive
+          position, and the returns on a technology budget.</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">Holistic</span><h3>End to end</h3>
+            <p>From problem definition through implementation and continuous improvement, rather
+               than a strategy deck handed to somebody else to build.</p></div>
+          <div class="cell"><span class="n">Collaborative</span><h3>Alongside your teams</h3>
+            <p>Integrated with your people and your strategic vision, building in-house capability
+               as the work proceeds.</p></div>
+          <div class="cell"><span class="n">Proven</span><h3>Track record</h3>
+            <p>A history of delivering measurable AI and machine learning value across regulated,
+               operationally demanding industries.</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="site">
+    <div class="wrap foot-in">
+      <span class="mono-badge">R<em>&amp;</em>A</span>
+      <span class="contact">
+        <span class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10.4c0 5.6-8 11.6-8 11.6s-8-6-8-11.6a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10.2" r="2.9"/></svg>
+          2605 Dupree Circle, Austin TX 78748
+        </span>
+        <span class="icon-actions">
+          <a class="icon-btn" href="tel:***REMOVED-PHONE***" data-tip="Call us"
+             aria-label="Call Riverton and Associates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg>
+          </a>
+          <a class="icon-btn" href="mailto:***REMOVED-EMAIL***" data-tip="Email us"
+             aria-label="Email Riverton and Associates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg>
+          </a>
+          <button type="button" class="icon-btn js-chat-open" data-tip="Chat with Rivet"
+                  aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
+          </button>
+        </span>
+      </span>
+      <span class="rights">Bring Data To Life</span>
+    </div>
+  </footer>
+
+  <div class="chatdock" id="chatdock" hidden role="dialog" aria-modal="false" aria-labelledby="rivet-name">
+    <div class="chatdock-head">
+      <svg class="avatar" viewBox="0 0 48 48" role="img" aria-label="Rivet avatar">
+        <circle cx="24" cy="24" r="22.4" fill="var(--raised)" stroke="var(--accent)" stroke-width="1.8"/>
+        <path d="M16.4 15.2 30 23.4M15.6 25.6 30 24.4M18.2 34.6 30 25.6" stroke="var(--muted)"
+              stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <circle cx="14.6" cy="14.6" r="2.5" fill="var(--data)"/>
+        <circle cx="13.6" cy="25.6" r="2.5" fill="var(--data)"/>
+        <circle cx="16.6" cy="35.4" r="2.5" fill="var(--data)"/>
+        <circle cx="32.6" cy="24.4" r="4.4" fill="var(--accent)"/>
+      </svg>
+      <div>
+        <div class="nm" id="rivet-name">Rivet</div>
+        <div class="rl"><span class="online"></span> Riverton data agent</div>
+      </div>
+      <button class="x" id="chat-close" aria-label="Close chat">&times;</button>
+    </div>
+    <div class="chatdock-body" id="chat-log" aria-live="polite"></div>
+    <div class="chips" id="chat-chips"></div>
+    <form class="chatform" id="chat-form">
+      <input id="chat-input" type="text" autocomplete="off" placeholder="Ask Rivet something…"
+             aria-label="Message Rivet">
+      <input type="text" id="chat-hp" name="_gotcha" tabindex="-1" autocomplete="off"
+             aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <button type="submit" aria-label="Send message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+    <div class="chatnote" id="chat-note">Replies are scripted — anything you type reaches a
+      person.</div>
+  </div>
+</div>
+
+<script>
+/* ====================================================================
+   CHAT CAPTURE -- set CAPTURE_ENDPOINT to your form endpoint to switch on
+   delivery. Works with Formspree, Basin, Getform, Web3Forms or your own
+   handler: it POSTs JSON {email, message, page, _subject}.
+     e.g. var CAPTURE_ENDPOINT = 'https://formspree.io/f/abcdwxyz';
+   While it is empty, messages fall back to a pre-filled email draft, so
+   nothing a visitor writes is ever silently dropped.
+   ==================================================================== */
+var CAPTURE_ENDPOINT = '';
+var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
+
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var VIEWS = ['home','capabilities','approach','platform','blog','about'];
+
+  /* ---------- tab routing ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  function show(name, push) {
+    if (VIEWS.indexOf(name) < 0) name = 'home';
+    VIEWS.forEach(function (v) {
+      document.getElementById('view-' + v).classList.toggle('active', v === name);
+    });
+    tabs.forEach(function (t) {
+      t.setAttribute('aria-selected', t.dataset.view === name ? 'true' : 'false');
+    });
+    if (push && location.hash !== '#' + name) history.pushState(null, '', '#' + name);
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view, true); }); });
+  document.querySelectorAll('[data-goto]').forEach(function (b) {
+    b.addEventListener('click', function () { show(b.dataset.goto, true); });
+  });
+  window.addEventListener('popstate', function () { show((location.hash || '#home').slice(1), false); });
+  show((location.hash || '#home').slice(1), false);
+
+  /* ---------- home: sector problem cycle ---------- */
+  var SECTORS = [
+    { s:'Financial services',
+      p:'Fraudulent activity is buried inside ordinary-looking customer and transaction behavior, and rules-based checks only catch what somebody already thought of.',
+      y:'Behavioral models that learn each customer’s normal pattern and score deviation continuously, wired into the transaction path.',
+      o:'Fraud caught on behavior rather than on rules — deployed into the live transaction path at USAA.' },
+    { s:'Insurance',
+      p:'Claims cost more than they should, and the anomalies that explain why are only visible long after the money has gone out the door.',
+      y:'Anomaly detection across claims processing, scoring each claim against its own cohort before payment rather than after.',
+      o:'Streamlined claims handling and measurable cost reduction per claim.' },
+    { s:'Manufacturing',
+      p:'Production routing and scheduling are set by convention, leaving capacity unused and downtime absorbed as a cost of doing business.',
+      y:'Optimization models over routing and scheduling, fed by live plant data and retrained as the line changes.',
+      o:'Higher throughput and reduced downtime — the pattern behind a $10M annual saving at AK Steel.' }
+  ];
+  var si = 0;
+  var el = { s:document.getElementById('p-sector'), p:document.getElementById('p-problem'),
+             y:document.getElementById('p-system'), o:document.getElementById('p-outcome'),
+             t:document.getElementById('sector-tag') };
+  function paintSector(i) {
+    var r = SECTORS[i];
+    el.s.textContent = r.s; el.p.textContent = r.p; el.y.textContent = r.y; el.o.textContent = r.o;
+    el.t.textContent = (i + 1) + ' / ' + SECTORS.length;
+  }
+  paintSector(0);
+  if (!reduce) setInterval(function () { si = (si + 1) % SECTORS.length; paintSector(si); }, 6000);
+
+  /* ---------- platform: record transformation ---------- */
+  var STAGES = [
+    { label:'01 · Cleanse', note:'4 fields', rows:[
+      ['supplier_name','DELL MKTG L.P.\\x00  ','bad'], ['supplier_name','DELL MKTG L.P.','v'],
+      ['invoice_amount','12,480.00','v'], ['gl_code','  6120 ','bad'], ['gl_code','6120','v'],
+      ['description','latitude 5550 laptop qty 12','v']] },
+    { label:'02 · Normalize', note:'6 fields', rows:[
+      ['supplier_name','DELL MKTG L.P.','v'], ['supplier_canonical','Dell Marketing L.P.','new'],
+      ['supplier_id','SUP-0000418','new'], ['invoice_amount','12,480.00','v'],
+      ['gl_code','6120','v'], ['description','Latitude 5550 laptop, qty 12','v']] },
+    { label:'03 · Categorize', note:'9 fields', rows:[
+      ['supplier_canonical','Dell Marketing L.P.','v'], ['supplier_id','SUP-0000418','v'],
+      ['category_l1','Information Technology','new'], ['category_l2','End User Computing','new'],
+      ['category_l3','Notebooks & Mobile','new'], ['confidence','0.96','new'],
+      ['invoice_amount','12,480.00','v'], ['gl_code','6120','v'],
+      ['description','Latitude 5550 laptop, qty 12','v']] },
+    { label:'04 · Enrich', note:'15 fields', rows:[
+      ['supplier_canonical','Dell Marketing L.P.','v'], ['ultimate_parent','Dell Technologies Inc.','new'],
+      ['ticker','NYSE: DELL','new'], ['duns','80-773-1665','new'], ['country','United States','new'],
+      ['diversity_flag','None','new'], ['category_l3','Notebooks & Mobile','v'],
+      ['unit_price','1,040.00','new'], ['price_variance_vs_peer','+18.4%','alert'],
+      ['rogue_it_flag','TRUE — cost center MKT-220','alert'],
+      ['invoice_amount','12,480.00','v'], ['confidence','0.96','v']] }
+  ];
+  var body = document.getElementById('rec-body'),
+      sName = document.getElementById('stage-name'),
+      sNote = document.getElementById('stage-note'),
+      steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+  function render(i) {
+    var s = STAGES[i];
+    body.innerHTML = '';
+    s.rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      var cls = r[2] === 'bad' ? 'v bad' : r[2] === 'new' ? 'v new' : r[2] === 'alert' ? 'v alert' : 'v';
+      var f = document.createElement('td'); f.className = 'f'; f.textContent = r[0];
+      var v = document.createElement('td'); v.className = cls; v.textContent = r[1];
+      tr.appendChild(f); tr.appendChild(v); body.appendChild(tr);
+    });
+    sName.textContent = s.label; sNote.textContent = s.note;
+    steps.forEach(function (b, n) { b.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+  }
+  steps.forEach(function (b) { b.addEventListener('click', function () { render(+b.dataset.stage); }); });
+  render(0);
+
+  /* ---------- Rivet: chat dock ---------- */
+  var dock = document.getElementById('chatdock'),
+      log  = document.getElementById('chat-log'),
+      chips = document.getElementById('chat-chips'),
+      openers = Array.prototype.slice.call(document.querySelectorAll('.js-chat-open')),
+      lastOpener = null,
+      closeBtn = document.getElementById('chat-close'),
+      form = document.getElementById('chat-form'),
+      input = document.getElementById('chat-input');
+
+  var SCRIPT = [
+    ['What do you actually build?',
+     'Production systems — data pipelines, models, and the architecture around them. Recent work includes an expert system at AK Steel that saved $10M a year, and behavioral fraud detection at USAA that scores deviation instead of matching rules.'],
+    ['How do you approach a new problem?',
+     'Eight steps, in order, starting with defining a measurable business problem before any modeling happens. Skipping that step is the most common reason AI programs fail. The full method is on the Approach tab.'],
+    ['What does the spend platform find?',
+     'It cleanses and normalizes supplier names, categorizes every line, and enriches with firmographics — then unmasks resellers, rolls spend up to the ultimate parent, and flags rogue IT and abnormal spend. CXO Nexus builds it; Riverton implements it.']
+  ];
+
+  function bubble(who, text) {
+    var d = document.createElement('div');
+    d.className = 'cm ' + (who === 'Rivet' ? 'bot' : 'me');
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = who;
+    var t = document.createElement('div'); t.className = 'txt'; t.textContent = text;
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  var visitorEmail = null;      // reply-to, once the visitor gives it
+  var pending = [];             // things they said before we could send
+  var awaitingEmail = false;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function say(text, delay) {
+    setTimeout(function () { bubble('Rivet', text); }, reduce ? 0 : (delay || 420));
+  }
+
+  function transcript() {
+    return pending.map(function (t, i) { return (i + 1) + '. ' + t; }).join('\n\n');
+  }
+
+  function mailtoHref() {
+    var body = 'Message left via the Rivet chat on the Riverton website:\n\n' + transcript() +
+               (visitorEmail ? '\n\nReply to: ' + visitorEmail : '') +
+               '\n\nPage: ' + location.href;
+    return 'mailto:' + CAPTURE_MAILTO +
+           '?subject=' + encodeURIComponent('Riverton website — chat enquiry') +
+           '&body=' + encodeURIComponent(body);
+  }
+
+  function offerMailto(lead) {
+    var d = document.createElement('div');
+    d.className = 'cm bot';
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Rivet';
+    var t = document.createElement('div'); t.className = 'txt';
+    t.appendChild(document.createTextNode(lead + ' '));
+    var a = document.createElement('a');
+    a.href = mailtoHref();
+    a.textContent = 'Open an email instead';
+    a.style.color = 'var(--accent)';
+    t.appendChild(a);
+    t.appendChild(document.createTextNode('.'));
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function deliver() {
+    var payload = {
+      email: visitorEmail || '',
+      message: transcript(),
+      page: location.href,
+      _subject: 'Riverton website — chat enquiry'
+    };
+    if (!CAPTURE_ENDPOINT) {                       // not wired up yet
+      offerMailto('I could not send that from here yet —');
+      return;
+    }
+    fetch(CAPTURE_ENDPOINT, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      bubble('Rivet', 'Sent. Barrington will follow up at ' + visitorEmail + '.');
+      pending = [];
+    }).catch(function () {
+      offerMailto('That did not send —');
+    });
+  }
+
+  function reply(text) {
+    var hit = null;
+    SCRIPT.forEach(function (p) { if (p[0] === text) hit = p[1]; });
+    if (hit) { say(hit); return; }                 // scripted answer, nothing to capture
+
+    if (awaitingEmail) {
+      if (EMAIL_RE.test(text)) {
+        visitorEmail = text; awaitingEmail = false;
+        say('Thank you — sending that across now.', 260);
+        setTimeout(deliver, reduce ? 0 : 700);
+      } else {
+        pending.push(text);
+        say('That does not look like an email address. What is the best one to reach you on?');
+      }
+      return;
+    }
+
+    pending.push(text);
+    if (visitorEmail) {                            // already know them, just send
+      say('Noted — adding that to your message.', 260);
+      setTimeout(deliver, reduce ? 0 : 700);
+    } else {
+      awaitingEmail = true;
+      say('Noted. I cannot answer that one myself, but I will put it in front of a person — ' +
+          'what is the best email to reach you on?');
+    }
+  }
+
+  function seed() {
+    log.innerHTML = ''; chips.innerHTML = '';
+    bubble('Rivet', 'Hello — I am Rivet, Riverton\u2019s data agent. I can explain what we build, how we approach a problem, or what the spend platform surfaces. Where would you like to start?');
+    SCRIPT.forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = p[0];
+      b.addEventListener('click', function () { bubble('You', p[0]); reply(p[0]); chips.innerHTML = ''; });
+      chips.appendChild(b);
+    });
+  }
+
+  function openDock(src) { lastOpener = src || lastOpener; dock.hidden = false;
+                           if (!log.children.length) seed(); closeBtn.focus(); }
+  function closeDock() { dock.hidden = true; if (lastOpener) lastOpener.focus(); }
+
+  openers.forEach(function (b) {
+    b.addEventListener('click', function () { openDock(b); });
+  });
+  closeBtn.addEventListener('click', closeDock);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !dock.hidden) closeDock(); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var hp = document.getElementById('chat-hp');
+    if (hp && hp.value) return;                    // bot filled the honeypot
+    var v = input.value.trim(); if (!v) return;
+    bubble('You', v); input.value = ''; chips.innerHTML = ''; reply(v);
+  });
+})();
+</script>
+</body>
+</html>
