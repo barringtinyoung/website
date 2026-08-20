@@ -1,5 +1,12 @@
 # Riverton & Associates — website
 
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/barringtinyoung/website.git
+git push -u origin main
+
 **This folder is the source of truth for the live site.** All future edits happen here.
 
     website/
