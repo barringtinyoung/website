@@ -90,12 +90,36 @@
   .icon-btn.sm { width:32px; height:32px; }
   .icon-btn.sm svg { width:15px; height:15px; }
   .icon-btn.sm::after { bottom:auto; top:calc(100% + 8px); }
-  .tab { font-family:var(--mono); font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
+  .tab, .tab-trigger { font-family:var(--mono); font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
          color:var(--muted); background:none; border:0; border-bottom:2px solid transparent;
          padding:.7rem .85rem; cursor:pointer; white-space:nowrap; font-weight:600;
          transition:color .16s ease, border-color .16s ease; }
-  .tab:hover { color:var(--ink); }
-  .tab[aria-selected="true"] { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab:hover, .tab-trigger:hover { color:var(--ink); }
+  .tab[aria-selected="true"], .tab-trigger[aria-selected="true"] { color:var(--accent); border-bottom-color:var(--accent); }
+
+  /* ---------- partners dropdown ---------- */
+  .tab-trigger { display:inline-flex; align-items:center; gap:.4rem; }
+  .tab-trigger .caret { width:9px; height:9px; flex:none; transition:transform .18s ease; }
+  .tab-trigger[aria-expanded="true"] .caret { transform:rotate(180deg); }
+  .dd-menu { position:fixed; z-index:70; min-width:260px; background:var(--surface);
+             border:1px solid var(--line-2); box-shadow:0 16px 44px rgba(0,0,0,.34);
+             display:flex; flex-direction:column; animation:ddin .16s ease; }
+  @keyframes ddin { from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none} }
+  .dd-menu[hidden] { display:none; }
+  .dd-item { text-align:left; background:none; border:0; border-left:2px solid transparent;
+             padding:.7rem .95rem; cursor:pointer; display:flex; align-items:center; gap:.7rem;
+             font:inherit; color:inherit; transition:background .16s ease, border-color .16s ease; }
+  .dd-item + .dd-item { border-top:1px solid var(--line); }
+  .dd-item:hover, .dd-item:focus-visible { background:var(--raised); border-left-color:var(--accent); outline:none; }
+  .dd-item[aria-current="true"] { border-left-color:var(--accent); background:var(--raised); }
+  .dd-item .dd-ico { flex:none; width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
+  .dd-item .dd-ico img, .dd-item .dd-ico svg { width:100%; height:100%; object-fit:contain; display:block; }
+  .dd-item .dd-txt { display:flex; flex-direction:column; gap:.14rem; min-width:0; }
+  .dd-item .dd-name { font-family:var(--sans); font-weight:650; font-size:.9rem; letter-spacing:-.004em;
+                      color:var(--ink); text-transform:none; }
+  .dd-item[aria-current="true"] .dd-name { color:var(--accent); }
+  .dd-item .dd-sub { font-family:var(--mono); font-size:.62rem; letter-spacing:.05em;
+                     text-transform:uppercase; color:var(--muted); }
 
   .btn { font-family:var(--mono); font-size:.74rem; letter-spacing:.1em; text-transform:uppercase;
          text-decoration:none; font-weight:600; padding:.78rem 1.3rem; border:1px solid var(--accent);
@@ -208,6 +232,15 @@
                     padding:.45rem .7rem; white-space:nowrap; text-align:center; }
   .partner p { margin:0; font-size:.95rem; color:var(--ink); }
   .partner p em { color:var(--muted); font-style:normal; display:block; margin-top:.3rem; font-size:.87rem; }
+
+  /* ---------- BastionX partner view — scoped green accent to match their brand ---------- */
+  #view-bastionx { --accent:#4F9A67; }
+  .bx-logochip { display:inline-flex; align-items:center; background:#fff; border:1px solid var(--line-2);
+                 border-radius:12px; padding:.95rem 1.2rem; box-shadow:0 6px 20px rgba(0,0,0,.10); }
+  .bx-logochip img { display:block; width:min(260px,58vw); height:auto; }
+  .bx-tags { display:flex; flex-wrap:wrap; gap:.5rem; margin:.2rem 0 0; }
+  .bx-tag { font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+            color:var(--accent); border:1px solid var(--line-2); padding:.34rem .62rem; white-space:nowrap; }
 
   /* ---------- pipeline ---------- */
   .tier-label { font-family:var(--mono); font-size:.67rem; letter-spacing:.18em; text-transform:uppercase;
@@ -367,7 +400,7 @@
   @media (pointer: coarse), (max-width: 760px) {
     .icon-btn, .icon-btn.sm { width:44px; height:44px; }
     .icon-btn.sm svg { width:17px; height:17px; }
-    .tab { padding-top:.85rem; padding-bottom:.85rem; }
+    .tab, .tab-trigger { padding-top:.85rem; padding-bottom:.85rem; }
     .chatform input { padding:.8rem .7rem; }
     .chatform button { min-width:48px; justify-content:center; }
     .chip { padding:.6rem .75rem; }
@@ -395,7 +428,11 @@
         <button class="tab" role="tab" data-view="home"        aria-selected="true">Home</button>
         <button class="tab" role="tab" data-view="capabilities" aria-selected="false">Capabilities</button>
         <button class="tab" role="tab" data-view="approach"    aria-selected="false">Approach</button>
-        <button class="tab" role="tab" data-view="platform"    aria-selected="false">CXO Nexus Platform</button>
+        <button class="tab-trigger" id="partners-tab" type="button" aria-selected="false"
+                aria-haspopup="true" aria-expanded="false" aria-controls="partners-menu">
+          Partners
+          <svg class="caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1 1.2 5 4.8 9 1.2"/></svg>
+        </button>
         <button class="tab" role="tab" data-view="blog"        aria-selected="false">Blog</button>
         <button class="tab" role="tab" data-view="about"       aria-selected="false">About Us</button>
       </div>
@@ -493,10 +530,10 @@
           <div class="cell result">
             <span class="metric">Managed IT &amp; security</span>
             <span class="n">IT Management Services</span>
-            <p>Service desk, identity and access management, endpoint and mobile device
-               management, Microsoft 365 and cloud migration, and 24/7 infrastructure
-               monitoring — delivered with our partner FSL World, a technology and security
-               practice operating since 2005.</p>
+            <p>Service desk, identity and access management, endpoint security, cloud and edge
+               platforms, and 24/7 SOC/NOC monitoring — delivered with our partner BastionX, a
+               next-generation MSP/MSSP that treats security as the foundation and runs operations
+               with AI-driven automation.</p>
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.5rem">
@@ -599,84 +636,88 @@
 
     <section>
       <div class="wrap">
-        <div class="sec-head"><h2>IT desktop support &amp; management</h2></div>
+        <div class="sec-head"><h2>Managed IT &amp; security operations</h2></div>
 
         <div class="partner">
-          <div class="badge">Delivered<br>through partners</div>
-          <p>Riverton provides IT desktop support and management through our partner network.
+          <div class="badge">Delivered<br>with BastionX</div>
+          <p>Riverton provides managed IT and security operations through our partner BastionX,
+            a next-generation MSP/MSSP.
             <em>We scope the service, set the service levels, and stay accountable for delivery.
-            Partner organizations staff the desk. You hold one contract and one relationship,
-            not a chain of vendors pointing at each other.</em></p>
+            BastionX runs the operations and the security behind them. You hold one contract and
+            one relationship, not a chain of vendors pointing at each other.</em></p>
         </div>
 
-        <p class="sec-lede">A tiered service desk with named management oversight, sized to your
-          seat count and governed against agreed service levels — backed by a partner practice
-          covering identity, endpoint, cloud, and security operations.</p>
+        <p class="sec-lede">One managed practice from the service desk to the SOC — proactive IT
+          operations and round-the-clock security, backed by AI-driven automation. Every capability
+          below is a service BastionX delivers — see
+          <a href="https://bastionx.io" target="_blank" rel="noopener"
+             style="color:var(--accent);text-decoration:underline">bastionx.io</a>.</p>
 
+        <p class="tier-label">Run &amp; support — managed IT</p>
         <div class="grid3">
           <div class="cell">
-            <span class="n">Tier 1</span><h3>Service desk</h3>
-            <p>Triage, password resets, account provisioning, software installation, and ticket
-               routing — the volume layer that keeps everything else free to work.</p>
+            <span class="n">Managed IT</span><h4>Service desk</h4>
+            <p>Fast, intelligent support that simplifies IT operations and keeps your people
+               productive.</p>
           </div>
           <div class="cell">
-            <span class="n">Tier 2</span><h3>Advanced support</h3>
-            <p>Operating system troubleshooting, hardware diagnostics, VPN configuration, mobile
-               device management, and network adjustments.</p>
+            <span class="n">Managed IT</span><h4>Desktop &amp; asset management</h4>
+            <p>Remote troubleshooting plus total visibility into devices, licenses, and network
+               health.</p>
           </div>
           <div class="cell">
-            <span class="n">Tier 3</span><h3>Systems engineering</h3>
-            <p>Server and network incident response, cloud infrastructure, database issues, and
-               escalations that need an engineer rather than a script.</p>
+            <span class="n">Managed IT</span><h4>Patch &amp; policy management</h4>
+            <p>Automated updates that strengthen security without downtime, and centralized policy
+               that enforces consistency.</p>
           </div>
           <div class="cell">
-            <span class="n">Project management</span><h3>Rollouts and change</h3>
-            <p>Deliverable tracking, rollout scheduling, resource coordination, and timeline
-               management for migrations and refresh programs.</p>
+            <span class="n">Operational support</span><h4>Proactive operations</h4>
+            <p>Proactive system management and issue resolution across servers, endpoints, and
+               networks — an extension of your team, not a ticket queue.</p>
           </div>
           <div class="cell">
-            <span class="n">Delivery management</span><h3>Oversight and governance</h3>
-            <p>Named senior oversight, service-level review, escalation ownership, and regular
-               performance reporting against what was agreed.</p>
+            <span class="n">Physical support</span><h4>On-site hands</h4>
+            <p>On-site technical support for physical infrastructure and hardware when something
+               needs a person in the room.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Continuous monitoring</span><h4>SOC &amp; NOC, 24/7</h4>
+            <p>Round-the-clock security and network operations centers with smart, rule-based
+               alerting that prioritizes what actually matters.</p>
+          </div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.4rem">Secure &amp; modernize</p>
+        <div class="grid3">
+          <div class="cell">
+            <span class="n">Cybersecurity</span><h4>SOC as a service</h4>
+            <p>Managed detection and response through a security operations center that hunts
+               threats rather than forwarding alerts.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Identity &amp; access</span><h4>Verify every identity</h4>
+            <p>Biometric, continuously validated identity with AI-driven trust signals (via iVALT),
+               cutting reliance on passwords that get phished.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Zero trust</span><h4>Verify-always networking</h4>
+            <p>Segmented, verify-always network access so a foothold in one place does not become
+               the run of the house.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Assessment</span><h4>Penetration testing</h4>
+            <p>Simulated attacks that find the vulnerabilities in your systems and defenses before
+               someone else does.</p>
+          </div>
+          <div class="cell">
+            <span class="n">Cloud</span><h4>Cloud &amp; edge platforms</h4>
+            <p>Cloud migration and edge-platform modernization designed for resilience, not just
+               lift-and-shift.</p>
           </div>
           <div class="cell" style="background:var(--surface)">
-            <span class="n">Engagement model</span><h3>Priced by seat block</h3>
-            <p>A fixed monthly retainer scaled in user blocks, with committed hours by tier.
-               Project and development work is quoted separately and approved in writing first.</p>
-          </div>
-        </div>
-
-        <p class="tier-label" style="margin-top:2.4rem">Also covered by the partner practice</p>
-        <div class="grid3">
-          <div class="cell">
-            <span class="n">Identity</span><h4>Access and governance</h4>
-            <p>Single sign-on, multi-factor authentication, full joiner–mover–leaver lifecycle,
-               and access reviews that satisfy an auditor.</p>
-          </div>
-          <div class="cell">
-            <span class="n">Endpoint</span><h4>Devices and mobile</h4>
-            <p>Mobile device and application management, enrollment, conditional access, and
-               detection and response across every device on the network.</p>
-          </div>
-          <div class="cell">
-            <span class="n">Cloud</span><h4>Microsoft 365 and migration</h4>
-            <p>Microsoft 365 and SharePoint, email migration from on-premises, and cloud
-               modernization of the wider estate.</p>
-          </div>
-          <div class="cell">
-            <span class="n">Security operations</span><h4>Monitor and respond</h4>
-            <p>Around-the-clock infrastructure monitoring, security event monitoring with
-               automated response, and privileged access control.</p>
-          </div>
-          <div class="cell">
-            <span class="n">Assessment</span><h4>Test and harden</h4>
-            <p>Web application and infrastructure penetration testing, email hardening, data loss
-               prevention, and security gap analysis.</p>
-          </div>
-          <div class="cell">
-            <span class="n">Advisory</span><h4>Risk and compliance</h4>
-            <p>Risk assessment, compliance review, and a zero-trust roadmap that sequences the
-               work rather than presenting it all at once.</p>
+            <span class="n">Compliance</span><h4>Compliance automation</h4>
+            <p>Automated evidence collection and continuous, audit-ready compliance in one platform
+               (via EazyGRC) — less manual overhead at audit time.</p>
           </div>
         </div>
       </div>
@@ -689,7 +730,7 @@
           <p>Riverton is an implementation partner for the CXO Nexus enterprise spend analytics
              platform, deploying it for clients who need spend visibility fast.</p>
         </div>
-        <button class="btn" data-goto="platform">See the platform</button>
+        <a class="btn" href="https://www.cxonexus.com" target="_blank" rel="noopener">Visit CXO Nexus</a>
       </div>
     </div>
   </div>
@@ -896,6 +937,100 @@
              your spend actually looks like — before any commitment.</p>
         </div>
         <a class="btn" href="mailto:barrington@riverton-assoc.com">barrington@riverton-assoc.com</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BASTIONX ==================== -->
+  <div class="view" id="view-bastionx" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Alliance partner — BastionX · the next-generation MSP / MSSP</div>
+        <h1>Amplify security, <span class="hl">simplify IT.</span></h1>
+        <p class="lede">BastionX is a New York–based managed IT and cybersecurity provider that treats
+          security as foundational rather than bolted on — 24/7 monitored operations, managed
+          defense, and AI-driven automation. Riverton partners with BastionX so the infrastructure
+          under your data is as well-run as the analytics on top of it.</p>
+      </div>
+    </header>
+
+    <section style="border-top:0">
+      <div class="wrap">
+        <div class="partner">
+          <a class="bx-logochip" href="https://bastionx.io" target="_blank" rel="noopener"
+             aria-label="Visit bastionx.io"><img src="bastionx-logo.png"
+                alt="BastionX — Amplify Security, Simplify IT"></a>
+          <p>Autonomous. Secure. Open. — BastionX runs an integrated SOC/NOC with U.S.-based support,
+            turning complexity into confidence for compliance-heavy organizations.
+            <em>BastionX is an independent managed-service and security provider. Riverton introduces
+            and partners with them to deliver IT operations and cybersecurity alongside our
+            spend-analytics work.</em></p>
+        </div>
+
+        <div class="sec-head"><h2>What BastionX brings</h2></div>
+        <p class="sec-lede">Managed security, managed infrastructure, and the automation that makes a
+          small, senior team behave like a much larger one — summarized from bastionx.io.</p>
+
+        <p class="tier-label">Managed security — MSSP</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">01</span><h4>Managed SOC</h4>
+            <p>A 24/7 security operations center with proactive threat hunting, detection, and
+               incident response — not just alerts forwarded to your inbox.</p></div>
+          <div class="cell"><span class="n">02</span><h4>Penetration testing</h4>
+            <p>Adversarial testing that validates your defenses before someone else does, with
+               remediation guidance your team can act on.</p></div>
+          <div class="cell"><span class="n">03</span><h4>Identity &amp; access</h4>
+            <p>Passwordless, least-privilege identity and access management — closing the credential
+               gaps that most breaches walk through.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Managed IT operations — MSP</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">04</span><h4>Managed IT &amp; NOC</h4>
+            <p>AI-driven 24/7 network monitoring plus responsive, U.S.-based support that keeps
+               day-to-day infrastructure quietly working.</p></div>
+          <div class="cell"><span class="n">05</span><h4>Cloud &amp; edge</h4>
+            <p>Cloud migrations and edge platforms designed for resilience — moving workloads without
+               moving the risk onto you.</p></div>
+          <div class="cell"><span class="n">06</span><h4>Zero Trust networking</h4>
+            <p>Segmented, verify-always network access so a foothold in one place does not become the
+               run of the house.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Build &amp; govern</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">07</span><h4>DevSecOps</h4>
+            <p>Security built into the software delivery pipeline — vulnerabilities caught in the
+               build, not in production.</p></div>
+          <div class="cell"><span class="n">08</span><h4>SOC 2 &amp; compliance</h4>
+            <p>Automated evidence collection and continuous compliance for SOC 2, HIPAA, and the
+               frameworks your industry answers to.</p></div>
+          <div class="cell" style="background:var(--surface)"><span class="n">09</span><h4>Agentic AI automation</h4>
+            <p>Autonomous operations that scale a senior team — routine work handled by agents so
+               people focus on the exceptions.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Industries served</p>
+        <div class="bx-tags">
+          <span class="bx-tag">Healthcare · HIPAA</span>
+          <span class="bx-tag">Financial services</span>
+          <span class="bx-tag">Legal &amp; professional</span>
+          <span class="bx-tag">Nonprofits</span>
+          <span class="bx-tag">Retail</span>
+          <span class="bx-tag">Energy &amp; utilities</span>
+          <span class="bx-tag">Public sector &amp; federal</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Need the IT and security under your data handled?</h2>
+          <p>BastionX runs the infrastructure and defense; Riverton makes your spend and data
+             answerable. Together that is one accountable stack.</p>
+        </div>
+        <a class="btn" href="https://bastionx.io" target="_blank" rel="noopener">bastionx.io</a>
       </div>
     </div>
   </div>
@@ -1144,6 +1279,26 @@
   </div>
 </div>
 
+<!-- partners dropdown menu — direct child of <body> (not inside .page) so the fixed
+     overlay is never trapped by an ancestor paint/stacking context, and placed BEFORE
+     the script so getElementById('partners-menu') resolves when the IIFE runs. -->
+<div class="dd-menu" id="partners-menu" role="menu" aria-label="Partners" hidden>
+  <button class="dd-item" role="menuitem" type="button" data-view="platform">
+    <span class="dd-ico" aria-hidden="true"><img src="cxonexus-mark.png" alt="" width="26" height="26"></span>
+    <span class="dd-txt">
+      <span class="dd-name">CXO Nexus</span>
+      <span class="dd-sub">Enterprise spend analytics</span>
+    </span>
+  </button>
+  <button class="dd-item" role="menuitem" type="button" data-view="bastionx">
+    <span class="dd-ico" aria-hidden="true"><img src="bastionx-mark.png" alt="" width="26" height="26"></span>
+    <span class="dd-txt">
+      <span class="dd-name">BastionX</span>
+      <span class="dd-sub">Managed IT &amp; cybersecurity</span>
+    </span>
+  </button>
+</div>
+
 <script>
 /* ====================================================================
    CHAT CAPTURE -- set CAPTURE_ENDPOINT to your form endpoint to switch on
@@ -1158,10 +1313,14 @@ var CAPTURE_MAILTO   = 'barrington@riverton-assoc.com';
 
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var VIEWS = ['home','capabilities','approach','platform','blog','about'];
+  var VIEWS = ['home','capabilities','approach','platform','bastionx','blog','about'];
+  var PARTNER_VIEWS = ['platform','bastionx'];
 
   /* ---------- tab routing ---------- */
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  var partnersTab  = document.getElementById('partners-tab'),
+      partnersMenu = document.getElementById('partners-menu'),
+      ddItems      = Array.prototype.slice.call(document.querySelectorAll('.dd-item'));
   function show(name, push) {
     if (VIEWS.indexOf(name) < 0) name = 'home';
     VIEWS.forEach(function (v) {
@@ -1170,6 +1329,12 @@ var CAPTURE_MAILTO   = 'barrington@riverton-assoc.com';
     tabs.forEach(function (t) {
       t.setAttribute('aria-selected', t.dataset.view === name ? 'true' : 'false');
     });
+    if (partnersTab) {
+      partnersTab.setAttribute('aria-selected', PARTNER_VIEWS.indexOf(name) >= 0 ? 'true' : 'false');
+      ddItems.forEach(function (it) {
+        it.setAttribute('aria-current', it.dataset.view === name ? 'true' : 'false');
+      });
+    }
     if (push && location.hash !== '#' + name) history.pushState(null, '', '#' + name);
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   }
@@ -1177,6 +1342,36 @@ var CAPTURE_MAILTO   = 'barrington@riverton-assoc.com';
   document.querySelectorAll('[data-goto]').forEach(function (b) {
     b.addEventListener('click', function () { show(b.dataset.goto, true); });
   });
+
+  /* ---------- partners dropdown ---------- */
+  function ddOpen(open) {
+    if (!partnersMenu) return;
+    if (open) {
+      var r = partnersTab.getBoundingClientRect();
+      var vw = document.documentElement.clientWidth;
+      var left = Math.min(r.left, vw - 260 - 8);
+      partnersMenu.style.left = Math.max(8, left) + 'px';
+      partnersMenu.style.top  = (r.bottom + 1) + 'px';
+    }
+    partnersMenu.hidden = !open;
+    partnersTab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open && ddItems[0]) ddItems[0].focus();
+  }
+  if (partnersTab) {
+    partnersTab.addEventListener('click', function (e) { e.stopPropagation(); ddOpen(partnersMenu.hidden); });
+    ddItems.forEach(function (it) {
+      it.addEventListener('click', function () { ddOpen(false); show(it.dataset.view, true); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!partnersMenu.hidden && !partnersMenu.contains(e.target)
+          && e.target !== partnersTab && !partnersTab.contains(e.target)) ddOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !partnersMenu.hidden) { ddOpen(false); partnersTab.focus(); }
+    });
+    window.addEventListener('resize', function () { if (!partnersMenu.hidden) ddOpen(false); });
+  }
+
   window.addEventListener('popstate', function () { show((location.hash || '#home').slice(1), false); });
   show((location.hash || '#home').slice(1), false);
 
