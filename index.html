@@ -233,13 +233,18 @@
   .partner p { margin:0; font-size:.95rem; color:var(--ink); }
   .partner p em { color:var(--muted); font-style:normal; display:block; margin-top:.3rem; font-size:.87rem; }
 
-  /* ---------- BastionX partner view — scoped green accent to match their brand ---------- */
-  #view-bastionx { --accent:#4F9A67; }
-  .bx-logochip { display:inline-flex; align-items:center; background:#fff; border:1px solid var(--line-2);
+  /* ---------- partner views — each scopes --accent to that partner's brand ---------- */
+  #view-bastionx  { --accent:#4F9A67; }   /* BastionX green */
+  #view-securetsi { --accent:#1092A2; }   /* Secure Tech Solutions teal */
+
+  /* Shared partner-page furniture. .bx-* names are kept as aliases so the existing
+     BastionX markup keeps working; new partner views use the .pt-* names. */
+  .pt-logochip, .bx-logochip {
+                 display:inline-flex; align-items:center; background:#fff; border:1px solid var(--line-2);
                  border-radius:12px; padding:.95rem 1.2rem; box-shadow:0 6px 20px rgba(0,0,0,.10); }
-  .bx-logochip img { display:block; width:min(260px,58vw); height:auto; }
-  .bx-tags { display:flex; flex-wrap:wrap; gap:.5rem; margin:.2rem 0 0; }
-  .bx-tag { font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+  .pt-logochip img, .bx-logochip img { display:block; width:min(260px,58vw); height:auto; }
+  .pt-tags, .bx-tags { display:flex; flex-wrap:wrap; gap:.5rem; margin:.2rem 0 0; }
+  .pt-tag, .bx-tag { font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
             color:var(--accent); border:1px solid var(--line-2); padding:.34rem .62rem; white-space:nowrap; }
 
   /* ---------- pipeline ---------- */
@@ -820,13 +825,23 @@
   <!-- ==================== PLATFORM (RESELLER) ==================== -->
   <div class="view" id="view-platform" role="tabpanel">
     <header class="lead">
-      <div class="wrap">
-        <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
-        <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
-        <p class="lede">Riverton &amp; Associates is an implementation partner for the CXO Nexus
-          enterprise spend analytics platform. We deploy it, integrate it with your source systems,
-          design the taxonomy it runs on, and make sure it produces answers your finance and
-          procurement teams will actually defend.</p>
+      <div class="wrap split">
+        <div>
+          <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
+          <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+          <p class="lede">Riverton &amp; Associates is an implementation partner for the CXO Nexus
+            enterprise spend analytics platform. We deploy it, integrate it with your source systems,
+            design the taxonomy it runs on, and make sure it produces answers your finance and
+            procurement teams will actually defend.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-bar">
+            <span style="color:var(--accent)">●</span>
+            Spend data · intake → review
+          </div>
+          <div id="spend-pipeline-compact" style="padding:.9rem .95rem 1.1rem"></div>
+        </div>
       </div>
     </header>
 
@@ -1031,6 +1046,150 @@
              answerable. Together that is one accountable stack.</p>
         </div>
         <a class="btn" href="https://bastionx.io" target="_blank" rel="noopener">bastionx.io</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECURE TECH SOLUTIONS ==================== -->
+  <div class="view" id="view-securetsi" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">Alliance partner — Secure Tech Solutions · cloud, data center &amp; cybersecurity</div>
+        <h1>One partner for <span class="hl">every layer of the stack.</span></h1>
+        <p class="lede">Secure Tech Solutions delivers full-spectrum cloud computing and data center
+          solutions — SaaS, UCaaS, DaaS, cybersecurity, physical security, backup and disaster recovery,
+          AI-driven custom software development, and Microsoft and multi-vendor licensing — backed by IT
+          professional services and complete MSP/CSP account management. They serve B2B and federal
+          clients. Riverton partners with them so the platforms your data depends on are built, secured
+          and supported by one accountable team.</p>
+      </div>
+    </header>
+
+    <section style="border-top:0">
+      <div class="wrap">
+        <div class="partner">
+          <a class="pt-logochip" href="https://www.securetsi.com" target="_blank" rel="noopener"
+             aria-label="Visit securetsi.com"><img src="securetsi-logo.png"
+                alt="Secure Tech Solutions — Complete Cloud IT Solutions"></a>
+          <p>A single trusted partner for every layer of the technology stack — cloud infrastructure,
+            data center, security and custom software, under one account team rather than a support queue.
+            <em>Secure Tech Solutions Inc is an independent IT consultancy and solutions provider. Riverton
+            introduces and partners with them to deliver cloud, infrastructure, security and applied AI work
+            alongside our spend-analytics practice.</em></p>
+        </div>
+
+        <div class="sec-head"><h2>Core competencies</h2></div>
+        <p class="sec-lede">Cloud, data center, security and custom software under one account team —
+          taken from their capabilities statement.</p>
+
+        <p class="tier-label">Cloud &amp; hosting</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">01</span><h4>SaaS procurement</h4>
+            <p>Software-as-a-Service procurement and cloud application licensing, managed as a portfolio
+               rather than a scatter of individual subscriptions.</p></div>
+          <div class="cell"><span class="n">02</span><h4>IaaS &amp; PaaS</h4>
+            <p>Infrastructure and Platform-as-a-Service with managed secure hosting — the platform
+               chosen to fit the workload.</p></div>
+          <div class="cell"><span class="n">03</span><h4>Data center</h4>
+            <p>Colocation, managed infrastructure and secure facility hosting for the workloads that
+               should not sit in an office cupboard.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Security &amp; continuity</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">04</span><h4>Cybersecurity services</h4>
+            <p>Including Highly Adaptive Cybersecurity Services (HACS) and support for CMMC Level 2 and
+               Level 3 — built for organizations that have to prove their posture.</p></div>
+          <div class="cell"><span class="n">05</span><h4>Backup &amp; disaster recovery</h4>
+            <p>BDR designed so an outage is an inconvenience rather than an event — the business keeps
+               running while the fault is fixed.</p></div>
+          <div class="cell"><span class="n">06</span><h4>Physical security</h4>
+            <p>Access control, surveillance and facility protection, handled by the same team that
+               secures the network rather than a separate vendor.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Workplace &amp; applications</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">07</span><h4>UCaaS &amp; CCaaS</h4>
+            <p>Unified communications and contact center as a service — voice, meetings and customer
+               contact on one platform instead of three.</p></div>
+          <div class="cell"><span class="n">08</span><h4>Desktop-as-a-Service</h4>
+            <p>DaaS that puts a managed, consistent desktop wherever people work, without shipping
+               hardware to follow them.</p></div>
+          <div class="cell"><span class="n">09</span><h4>Custom AI &amp; software</h4>
+            <p>AI assistants, workflow automation and application layers built into the systems a
+               business already runs.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Licensing &amp; managed service</p>
+        <div class="grid3">
+          <div class="cell"><span class="n">10</span><h4>Software licensing</h4>
+            <p>Microsoft and multi-vendor licensing handled on the CSP model, with the paperwork and
+               renewals owned rather than left to you.</p></div>
+          <div class="cell"><span class="n">11</span><h4>MSP / CSP management</h4>
+            <p>Complete account management across the estate — one team accountable for what is
+               deployed, licensed and supported.</p></div>
+          <div class="cell" style="background:var(--surface)"><span class="n">12</span><h4>IT professional services</h4>
+            <p>The engineering hours behind the managed service, for the projects that sit outside
+               business-as-usual support.</p></div>
+        </div>
+
+        <div class="sec-head" style="margin-top:3rem"><h2>What sets them apart</h2></div>
+        <div class="grid2">
+          <div class="cell"><h4>A team, not a queue</h4>
+            <p>A single point of contact backed by a dedicated team of engineers — not a ticket
+               routed to whoever is free.</p></div>
+          <div class="cell"><h4>Full-spectrum coverage</h4>
+            <p>From cloud infrastructure through custom software to compliance consulting, so the
+               seams between vendors stop being your problem.</p></div>
+          <div class="cell"><h4>White-glove licensing</h4>
+            <p>CSP-model licensing management rather than going direct to the manufacturer — someone
+               owns the renewals, the true-ups and the entitlement questions.</p></div>
+          <div class="cell"><h4>Federal-ready</h4>
+            <p>Service lines aligned to NAICS codes spanning cloud, cybersecurity, telecom and
+               consulting.</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">Federal readiness — NAICS codes</p>
+        <div class="grid2">
+          <div class="cell"><h4>Cloud &amp; software</h4>
+            <p><strong>513210</strong> Software Publishers (SaaS)<br>
+               <strong>518210</strong> Computing Infrastructure, Data Processing &amp; Hosting (IaaS/PaaS)<br>
+               <strong>423430</strong> Computer &amp; Software Merchant Wholesalers</p></div>
+          <div class="cell"><h4>Cybersecurity &amp; IT services</h4>
+            <p><strong>541519</strong> Other Computer Related Services (Cybersecurity/HACS)<br>
+               <strong>541513</strong> Computer Facilities Management (MSSP/SOC)<br>
+               <strong>541512</strong> Computer Systems Design Services<br>
+               <strong>541511</strong> Custom Computer Programming (Custom AI Dev)</p></div>
+          <div class="cell"><h4>Telecommunications</h4>
+            <p><strong>517810</strong> All Other Telecommunications (UCaaS/CCaaS/VoIP)<br>
+               <strong>517311</strong> Wired Telecommunications Carriers</p></div>
+          <div class="cell"><h4>Consulting &amp; compliance</h4>
+            <p><strong>541611</strong> Management &amp; General Consulting Services<br>
+               <strong>541690</strong> Other Scientific &amp; Technical Consulting<br>
+               <strong>541211</strong> Offices of CPAs (Compliance Audit)</p></div>
+        </div>
+
+        <p class="tier-label" style="margin-top:2.6rem">At a glance</p>
+        <div class="pt-tags">
+          <span class="pt-tag">B2B &amp; federal clients</span>
+          <span class="pt-tag">CMMC Level 2 / 3</span>
+          <span class="pt-tag">HACS</span>
+          <span class="pt-tag">MSP / CSP model</span>
+          <span class="pt-tag">Long Island, NY</span>
+          <span class="pt-tag">In business since 1999</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Need the cloud and IT underneath it built properly?</h2>
+          <p>Secure Tech Solutions builds, secures and runs the platform; Riverton makes your spend and
+             data answerable on top of it. One stack, two specialists, no gap between them.</p>
+        </div>
+        <a class="btn" href="https://www.securetsi.com" target="_blank" rel="noopener">securetsi.com</a>
       </div>
     </div>
   </div>
@@ -1297,6 +1456,13 @@
       <span class="dd-sub">Managed IT &amp; cybersecurity</span>
     </span>
   </button>
+  <button class="dd-item" role="menuitem" type="button" data-view="securetsi">
+    <span class="dd-ico" aria-hidden="true"><img src="securetsi-mark.png" alt="" width="26" height="26"></span>
+    <span class="dd-txt">
+      <span class="dd-name">Secure Tech Solutions</span>
+      <span class="dd-sub">Cloud IT &amp; applied AI</span>
+    </span>
+  </button>
 </div>
 
 <script>
@@ -1313,8 +1479,8 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
 
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var VIEWS = ['home','capabilities','approach','platform','bastionx','blog','about'];
-  var PARTNER_VIEWS = ['platform','bastionx'];
+  var VIEWS = ['home','capabilities','approach','platform','bastionx','securetsi','blog','about'];
+  var PARTNER_VIEWS = ['platform','bastionx','securetsi'];
 
   /* ---------- tab routing ---------- */
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
@@ -1346,14 +1512,18 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
   /* ---------- partners dropdown ---------- */
   function ddOpen(open) {
     if (!partnersMenu) return;
+    partnersMenu.hidden = !open;
     if (open) {
       var r = partnersTab.getBoundingClientRect();
       var vw = document.documentElement.clientWidth;
-      var left = Math.min(r.left, vw - 260 - 8);
+      /* Measure rather than assume: .dd-menu is min-width, so it grows with the longest
+         partner name. Unhide first so offsetWidth is real — no paint happens until this
+         task ends, so setting left/top below is still flicker-free. */
+      var mw = partnersMenu.offsetWidth || 260;
+      var left = Math.min(r.left, vw - mw - 8);
       partnersMenu.style.left = Math.max(8, left) + 'px';
       partnersMenu.style.top  = (r.bottom + 1) + 'px';
     }
-    partnersMenu.hidden = !open;
     partnersTab.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open && ddItems[0]) ddItems[0].focus();
   }
@@ -1592,6 +1762,17 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
     bubble('You', v); input.value = ''; chips.innerHTML = ''; reply(v);
   });
 })();
+</script>
+<script src="d3.v7.min.js"></script>
+<script src="spend-pipeline.js"></script>
+<script>
+  /* Compact pipeline rail in the CXO Nexus hero. Guarded so a missing D3 or
+     module file degrades to an empty panel rather than breaking the page. */
+  (function () {
+    if (typeof renderSpendPipeline !== 'function') return;
+    var el = document.getElementById('spend-pipeline-compact');
+    if (el) renderSpendPipeline(el, { variant: 'compact' });
+  })();
 </script>
 </body>
 </html>

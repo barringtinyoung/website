@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Spend pipeline — refinement harness</title>
+<style>
+  /* Mirrors the tokens index.html defines, so what you see here is what the
+     capabilities page will render. Keep these in sync if the site palette moves. */
+  :root {
+    --ground:#F7F6F3; --surface:#FFFFFF; --raised:#F1EFEB;
+    --ink:#10171A; --muted:#5B6A67; --faint:#7E8C89;
+    --line:#E0DDD7; --line-2:#CFCBC3;
+    --accent:#C4553A; --accent-d:#A8462E; --data:#2E7A6D; --warn:#9A6B12;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+    --col:1180px;
+  }
+  [data-theme="dark"] {
+    --ground:#0C1317; --surface:#111B20; --raised:#16232A;
+    --ink:#E9EEEC; --muted:#869693; --faint:#5E6E6B;
+    --line:#1F2E34; --line-2:#2A3C43;
+    --accent:#E06B4F; --accent-d:#C4573C; --data:#5FA89C; --warn:#D9A441;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); }
+  .bar {
+    position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+    padding:.8rem 1.2rem; background:var(--surface); border-bottom:1px solid var(--line);
+  }
+  .bar h1 { margin:0; font-family:var(--serif); font-size:1.05rem; font-weight:600; }
+  .bar .hint { font-family:var(--mono); font-size:.68rem; letter-spacing:.06em; color:var(--faint); }
+  .bar button {
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase;
+    padding:.42rem .8rem; background:transparent; color:var(--ink);
+    border:1px solid var(--line-2); cursor:pointer;
+  }
+  .bar button:hover { border-color:var(--accent); color:var(--accent); }
+  .wrap { max-width:var(--col); margin:0 auto; padding:1.6rem 1.2rem 4rem; }
+  #spend-pipeline { width:100%; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>Spend pipeline — refinement harness</h1>
+  <button id="theme">Toggle theme</button>
+  <button id="motion">Toggle motion</button>
+  <button id="reload">Redraw</button>
+  <span class="hint">edit spend-pipeline.js → save → redraw</span>
+</div>
+
+<div class="wrap">
+  <div id="spend-pipeline"></div>
+</div>
+
+<script src="d3.v7.min.js"></script>
+<script src="spend-pipeline.js"></script>
+<script>
+  var animate = true;
+  function draw() { renderSpendPipeline('#spend-pipeline', { animate: animate }); }
+  /* #dark in the URL opens straight into the dark palette - handy for screenshots */
+  if (location.hash === '#dark') document.documentElement.setAttribute('data-theme', 'dark');
+  draw();
+
+  document.getElementById('theme').addEventListener('click', function () {
+    var r = document.documentElement;
+    r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  document.getElementById('motion').addEventListener('click', function () { animate = !animate; draw(); });
+  document.getElementById('reload').addEventListener('click', function () { location.reload(); });
+</script>
+
+</body>
+</html>
