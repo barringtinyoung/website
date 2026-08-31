@@ -154,6 +154,13 @@
            gap:clamp(1.8rem,5vw,3.5rem); align-items:start; }
   @media (max-width:940px){ .split { grid-template-columns:1fr } }
 
+  /* The two hero diagrams, side by side under a full-width lede. The pipeline
+     takes the larger share: it is the denser of the two, and extra width makes
+     it shorter, which keeps the pair closer to the same height. */
+  .hero-panels { margin-top:2.6rem;
+                 grid-template-columns:minmax(0,1.32fr) minmax(0,1fr); }
+  @media (max-width:1100px){ .hero-panels { grid-template-columns:1fr } }
+
   .panel { background:var(--surface); border:1px solid var(--line); }
   .panel-bar { display:flex; align-items:center; gap:.55rem; padding:.7rem .95rem;
                border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.66rem;
@@ -232,6 +239,11 @@
                     padding:.45rem .7rem; white-space:nowrap; text-align:center; }
   .partner p { margin:0; font-size:.95rem; color:var(--ink); }
   .partner p em { color:var(--muted); font-style:normal; display:block; margin-top:.3rem; font-size:.87rem; }
+  /* The same band in the hero's right column, under the access diagram. That
+     column is about half the width, so the badge stacks above the text rather
+     than squeezing the paragraph into a third of it. */
+  .hero-partner { grid-template-columns:1fr; gap:.9rem; margin:1.6rem 0 0; align-items:start; }
+  .hero-partner .badge { justify-self:start; }
 
   /* ---------- partner views — each scopes --accent to that partner's brand ---------- */
   #view-bastionx  { --accent:#4F9A67; }   /* BastionX green */
@@ -825,16 +837,16 @@
   <!-- ==================== PLATFORM (RESELLER) ==================== -->
   <div class="view" id="view-platform" role="tabpanel">
     <header class="lead">
-      <div class="wrap split">
-        <div>
-          <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
-          <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
-          <p class="lede">Riverton &amp; Associates is an implementation partner for the CXO Nexus
-            enterprise spend analytics platform. We deploy it, integrate it with your source systems,
-            design the taxonomy it runs on, and make sure it produces answers your finance and
-            procurement teams will actually defend.</p>
-        </div>
+      <div class="wrap">
+        <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
+        <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+        <p class="lede" style="max-width:82ch">Riverton &amp; Associates is an implementation
+          partner for the CXO Nexus enterprise spend analytics platform. We deploy it, integrate
+          it with your source systems, design the taxonomy it runs on, and make sure it produces
+          answers your finance and procurement teams will actually defend.</p>
+      </div>
 
+      <div class="wrap split hero-panels">
         <div class="panel">
           <div class="panel-bar">
             <span style="color:var(--accent)">●</span>
@@ -842,20 +854,30 @@
           </div>
           <div id="spend-pipeline-compact" style="padding:.9rem .95rem 1.1rem"></div>
         </div>
+
+        <div>
+          <div class="panel">
+            <div class="panel-bar">
+              <span style="color:var(--accent)">●</span>
+              After publish · who sees what
+            </div>
+            <div id="spend-access" style="padding:.9rem .95rem 1.1rem"></div>
+          </div>
+
+          <div class="partner hero-partner">
+            <div class="badge">Platform by<br>CXO&nbsp;Nexus</div>
+            <p>The platform, its models, and its patented spend-management innovations are built
+              and owned by CXO Nexus.
+              <em>Riverton's role is implementation partner — onboarding, source-system
+              integration, taxonomy design, and the data engineering that gets your extracts into
+              it cleanly.</em></p>
+          </div>
+        </div>
       </div>
     </header>
 
     <section style="border-top:0">
       <div class="wrap">
-        <div class="partner">
-          <div class="badge">Platform by<br>CXO&nbsp;Nexus</div>
-          <p>The platform, its models, and its patented spend-management innovations are built and
-            owned by CXO Nexus.
-            <em>Riverton's role is implementation partner — onboarding, source-system
-            integration, taxonomy design, and the data engineering that gets your extracts into it
-            cleanly.</em></p>
-        </div>
-
         <div class="sec-head"><h2>What the platform does</h2></div>
         <p class="sec-lede">Nine operations that take raw accounts-payable extracts and turn them
           into a governed, queryable view of every dollar. Select a stage to watch a single
@@ -1574,27 +1596,31 @@ var CAPTURE_MAILTO   = 'barrington@riverton-assoc.com';
 
   /* ---------- platform: record transformation ---------- */
   var STAGES = [
-    { label:'01 · Cleanse', note:'4 fields', rows:[
+    { label:'01 · Cleanse', note:'5 fields', rows:[
       ['supplier_name','DELL MKTG L.P.\\x00  ','bad'], ['supplier_name','DELL MKTG L.P.','v'],
       ['invoice_amount','12,480.00','v'], ['gl_code','  6120 ','bad'], ['gl_code','6120','v'],
-      ['description','latitude 5550 laptop qty 12','v']] },
-    { label:'02 · Normalize', note:'6 fields', rows:[
+      ['description','latitude 5550 laptop qty 12','v'],
+      ['reseller_transaction','FALSE','v']] },
+    { label:'02 · Normalize', note:'7 fields', rows:[
       ['supplier_name','DELL MKTG L.P.','v'], ['supplier_canonical','Dell Marketing L.P.','new'],
       ['supplier_id','SUP-0000418','new'], ['invoice_amount','12,480.00','v'],
-      ['gl_code','6120','v'], ['description','Latitude 5550 laptop, qty 12','v']] },
-    { label:'03 · Categorize', note:'9 fields', rows:[
+      ['gl_code','6120','v'], ['description','Latitude 5550 laptop, qty 12','v'],
+      ['reseller_transaction','FALSE','v']] },
+    { label:'03 · Categorize', note:'10 fields', rows:[
       ['supplier_canonical','Dell Marketing L.P.','v'], ['supplier_id','SUP-0000418','v'],
       ['category_l1','Information Technology','new'], ['category_l2','End User Computing','new'],
       ['category_l3','Notebooks & Mobile','new'], ['confidence','0.96','new'],
       ['invoice_amount','12,480.00','v'], ['gl_code','6120','v'],
-      ['description','Latitude 5550 laptop, qty 12','v']] },
-    { label:'04 · Enrich', note:'15 fields', rows:[
+      ['description','Latitude 5550 laptop, qty 12','v'],
+      ['reseller_transaction','FALSE','v']] },
+    { label:'04 · Enrich', note:'16 fields', rows:[
       ['supplier_canonical','Dell Marketing L.P.','v'], ['ultimate_parent','Dell Technologies Inc.','new'],
       ['ticker','NYSE: DELL','new'], ['duns','80-773-1665','new'], ['country','United States','new'],
       ['diversity_flag','None','new'], ['category_l3','Notebooks & Mobile','v'],
       ['unit_price','1,040.00','new'], ['price_variance_vs_peer','+18.4%','alert'],
       ['rogue_it_flag','TRUE — cost center MKT-220','alert'],
-      ['invoice_amount','12,480.00','v'], ['confidence','0.96','v']] }
+      ['invoice_amount','12,480.00','v'], ['confidence','0.96','v'],
+      ['reseller_transaction','FALSE','v']] }
   ];
   var body = document.getElementById('rec-body'),
       sName = document.getElementById('stage-name'),
@@ -1772,6 +1798,8 @@ var CAPTURE_MAILTO   = 'barrington@riverton-assoc.com';
     if (typeof renderSpendPipeline !== 'function') return;
     var el = document.getElementById('spend-pipeline-compact');
     if (el) renderSpendPipeline(el, { variant: 'compact' });
+    var ac = document.getElementById('spend-access');
+    if (ac) renderSpendPipeline(ac, { variant: 'access' });
   })();
 </script>
 </body>

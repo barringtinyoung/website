@@ -42,11 +42,30 @@
     org:     '#2E7A6D',   /* organizations / suppliers */
     prod:    '#C4553A',   /* products */
     integ:   '#4A6FA5',   /* integrated record */
-    classed: '#9A6B12'    /* classified spend */
+    classed: '#9A6B12',   /* classified spend */
+    rework:  '#7E5AA0'    /* sent back from sign-off for updates */
   };
 
   var FONT_SANS = 'var(--sans, "Segoe UI", system-ui, sans-serif)';
   var FONT_MONO = 'var(--mono, ui-monospace, Consolas, monospace)';
+
+  /* =========================================================================
+     THE HANDOFF — the two hero diagrams are one story. The packet travels the
+     pipeline and reaches 12 Customer; only then does the access diagram show it
+     dividing among the roles. The compact variant announces each arrival, the
+     access variant waits for one.
+
+     Render order does not matter: both timers first tick on the frame after all
+     synchronous render calls, so HAS_PACER is settled before it is read. With
+     no compact variant on the page (the refinement harness, a page that embeds
+     only the access diagram) nothing ever announces, so the access variant
+     detects that and free-runs instead of sitting frozen.
+     ========================================================================= */
+
+  var ARRIVALS = [];
+  var HAS_PACER = false;
+  function onArrival(fn) { ARRIVALS.push(fn); }
+  function announceArrival() { ARRIVALS.forEach(function (f) { f(); }); }
 
   /* =========================================================================
      SPEC — the diagram itself. Edit freely.
@@ -62,16 +81,16 @@
   /* Horizontal bands. `minH` reserves space for the hand-drawn rows (people,
      gurneys, porters) that are generated rather than declared as ROOMS. */
   var LANES = [
-    { id: 'intake',   minH: 118, label: '01 · Intake',            note: 'contributors hand over spend data' },
+    { id: 'intake',   minH: 118, label: '01 · Data intake',            note: 'contributors hand over spend data' },
     { id: 'receive',  minH: 168, label: '02 · Receiving',         note: 'sacks stacked onto gurneys' },
     { id: 'transit',  minH: 96,  label: '03 · Transport',         note: 'wheeled through by data operations' },
-    { id: 'theatre',  label: '04 · Operating rooms',   note: 'one gurney, one room' },
-    { id: 'split',    label: '05 · Dissection',        note: 'organizations and products, same patient id' },
-    { id: 'suites',   label: '06 · Specialist suites', note: 'supplier and product, worked in parallel' },
-    { id: 'immerse',  label: '07 · Immersion',         note: 'knowledge integration' },
-    { id: 'classify', label: '08 · Classification',    note: 'the spend gets a name' },
-    { id: 'recovery', label: '09 · Recovery',          note: 'integrated and classified, resting' },
-    { id: 'review',   label: '10 · Review lab',        note: 'three independent checks' }
+    { id: 'theatre',  label: '04 · Record processing & compression',   note: 'one gurney, one room' },
+    { id: 'split',    label: '05 · Record split',        note: 'organizations and products, same record id' },
+    { id: 'suites',   label: '06 · Enrichment', note: 'supplier and product, worked in parallel' },
+    { id: 'immerse',  label: '07 · Match & merge',         note: 'knowledge integration' },
+    { id: 'classify', label: '08 · Spend classification',    note: 'the spend gets a name' },
+    { id: 'recovery', label: '09 · Ready for review',          note: 'integrated and classified, resting' },
+    { id: 'review',   label: '10 · Validation',        note: 'three independent checks' }
   ];
 
   /* Rooms / stations.
@@ -84,19 +103,19 @@
     /* ---- 04 · operating rooms ------------------------------------------ */
     { id: 'or1', kind: 'room', lane: 'theatre', x: 60,  w: 350, glyph: 'theatre',
       title: 'Operating room 1', tag: 'OR-1',
-      steps: ['6.1 Assign unique patient id',
+      steps: ['6.1 Assign unique record id',
               '6.2 Dissect into organizations + products',
-              '6.3 Both halves inherit the patient id'] },
+              '6.3 Both halves inherit the record id'] },
     { id: 'or2', kind: 'room', lane: 'theatre', x: 445, w: 350, glyph: 'theatre',
       title: 'Operating room 2', tag: 'OR-2',
-      steps: ['6.1 Assign unique patient id',
+      steps: ['6.1 Assign unique record id',
               '6.2 Dissect into organizations + products',
-              '6.3 Both halves inherit the patient id'] },
+              '6.3 Both halves inherit the record id'] },
     { id: 'or3', kind: 'room', lane: 'theatre', x: 830, w: 350, glyph: 'theatre',
       title: 'Operating room 3', tag: 'OR-3',
-      steps: ['6.1 Assign unique patient id',
+      steps: ['6.1 Assign unique record id',
               '6.2 Dissect into organizations + products',
-              '6.3 Both halves inherit the patient id'] },
+              '6.3 Both halves inherit the record id'] },
 
     /* ---- 05 · the split ------------------------------------------------- */
     { id: 'orgSplit',  kind: 'chip', lane: 'split', x: 210, w: 300, h: 42, accent: C.org,
@@ -116,12 +135,12 @@
       title: 'Product specialist', tag: '8',
       steps: ['8.1 Clean & normalize the product',
               '8.2 Identify the manufacturer from history',
-              '8.3 Integrate the enriched organization by patient id'] },
+              '8.3 Integrate the enriched organization by record id'] },
 
     /* ---- 07 · immersion -------------------------------------------------- */
     { id: 'immersion', kind: 'room', lane: 'immerse', x: 330, w: 580, glyph: 'immersion', accent: C.integ,
-      title: 'Knowledge immersion & integration', tag: '7.5 → 8.3',
-      steps: ['Enriched organizations held against their patient id, ready to be rejoined to product'] },
+      title: 'Match & merge', tag: '7.5 → 8.3',
+      steps: ['Enriched organizations held against their record id, ready to be rejoined to product'] },
 
     /* ---- 08 · classification -------------------------------------------- */
     { id: 'classifier', kind: 'room', lane: 'classify', x: 680, w: 500, glyph: 'physician', accent: C.classed,
@@ -265,16 +284,46 @@
          renderSpendPipeline('#el', { variant: 'compact' })
      ========================================================================= */
 
+  /* Rail stages. The two-branch section (05a / 05b) is not on this list - it is
+     laid out separately between SPLIT_AT-1 and SPLIT_AT. */
   var STAGES = [
-    { n: '01', t: 'Intake',                s: 'sacks of spend data handed over',       g: 'person',     c: 'raw' },
-    { n: '02', t: 'Receiving & transport', s: 'stacked onto gurneys, wheeled through', g: 'gurney',     c: 'raw' },
-    { n: '03', t: 'Operating rooms',       s: 'patient id assigned, record dissected', g: 'doors',      c: 'raw' },
-    { n: '04', t: 'Dissection',            s: 'organizations \u00b7 products',           g: 'split',      c: 'dual' },
-    { n: '05', t: 'Specialist suites',     s: 'clean \u00b7 normalize \u00b7 enrich',      g: 'specialist', c: 'dual' },
-    { n: '06', t: 'Immersion',             s: 'knowledge integration',                 g: 'merge',      c: 'integ' },
-    { n: '07', t: 'Classification',        s: 'the spend gets a name',                 g: 'physician',  c: 'classed' },
-    { n: '08', t: 'Recovery',              s: 'integrated and classified',             g: 'bed',        c: 'classed' },
-    { n: '09', t: 'Review lab',            s: 'supplier \u00b7 OEM \u00b7 classification',   g: 'lens',       c: 'classed' }
+    { n: '01', t: 'Data intake',                s: 'sacks of spend data handed over',        g: 'person', c: 'raw' },
+    { n: '02', t: 'Staging & batching', s: 'stacked onto gurneys, wheeled through',  g: 'gurney', c: 'raw' },
+    { n: '03', t: 'Record processing & compression',       s: 'record id assigned, record dissected',  g: 'doors',  c: 'raw' },
+    { n: '04', t: 'Record split',            s: 'splits into branches, one record id', g: 'split',  c: 'raw' },
+    { n: '06', t: 'Match & merge',             s: 'the two branches reunite \u2014 knowledge integration', g: 'merge',     c: 'integ', dx: 130 },
+    { n: '07', t: 'Spend classification',        s: 'the unified record gets a name',         g: 'physician', c: 'classed' },
+    { n: '08', t: 'Ready for review',              s: 'integrated and classified',              g: 'bed',       c: 'classed', dx: 130 },
+    { n: '09', t: 'Validation',            s: 'supplier \u00b7 OEM \u00b7 classification · contract',    g: 'lens',      c: 'classed', dx: 130 }
+  ];
+  var SPLIT_AT = 4;              /* stages drawn before the two-branch section */
+
+  /* Not everything is spend-classified. Contracts and business hierarchy leave
+     match & merge on their own path, through their own stage, and rejoin at
+     ready for review. BYPASS lists the specialists whose work takes it. */
+  var OTHER = { n: '07b', t: 'Other processing', s: 'contracts · business hierarchy',
+                g: 'cog', c: 'integ' };
+  var BYPASS = [2, 5];           /* contract, business hierarchy */
+
+  /* Dissection produces two separate branches - organizations and product
+     information - which feed one specialist bench. Each specialist / AI cleans,
+     normalizes and enriches its own slice. `c` says which branch feeds it, and
+     colours its dot. */
+  var SPECIALISTS = [
+    { t: 'Supplier', s: 'organizations · vendors',   g: 'org',      c: 'org'   },
+    { t: 'Product',  s: 'descriptions · attributes', g: 'box',      c: 'prod'  },
+    { t: 'Contract', s: 'terms · obligations',       g: 'doc',      c: 'org'   },
+    { t: 'Pricing',  s: 'competitive price',            g: 'tag',      c: 'prod'  },
+    { t: 'Spend',    s: 'leakage · outliers',        g: 'spike',    c: 'prod',
+      t2: 'anomaly' },
+    { t: 'Business', s: 'parentage · ownership',      g: 'hier',     c: 'org',
+      t2: 'hierarchy' }
+  ];
+
+  /* The two branches out of dissection. xf is where each enters the bench. */
+  var TRACKS = [
+    { c: 'org',  xf: 0.30 },
+    { c: 'prod', xf: 0.70 }
   ];
 
   /* The review lab splits three ways; only the classification branch
@@ -282,23 +331,26 @@
   var REVIEW_BRANCHES = [
     { id: 'sup', t: 'Supplier',       c: 'org' },
     { id: 'oem', t: 'OEM',            c: 'prod' },
-    { id: 'cls', t: 'Classification', c: 'classed' }
+    { id: 'cls', t: 'Classification', c: 'classed' },
+    { id: 'con', t: 'Contract',       c: 'org' }
   ];
   var CLASS_OUTPUTS = ['TBM', 'Level 1', 'Non-Tech'];
 
   /* Everything the review lab produces is packaged, then seen by the customer. */
   var TAIL = [
-    { n: '10', t: 'Packaging', s: 'deployed to QA \u2192 approved for viewing', g: 'package',  c: 'integ' },
+    { n: '10', t: 'Publish', s: 'deployed to QA \u2192 approved for viewing', g: 'package',  c: 'integ' },
     { n: '12', t: 'Customer',  s: 'eyes and hands on the result',             g: 'customer', c: 'integ' }
   ];
 
   /* Returns into processing. All three route up the left gutter: the right-hand
      side is full of label text, and a return routed round it crossed every
      stage caption on the way back. Colour carries which branch each one is. */
+  /* `from` is the review branch, `to` the specialist it feeds back into. */
   var FEEDBACK = [
-    { from: 0, label: '11.1 supplier to history' },
-    { from: 1, label: '11.2 OEM to history' },
-    { from: 2, label: '11.3 classification to product specialist' }
+    { from: 0, to: 0, gutter: 'L', label: '11.1 supplier to history' },
+    { from: 1, to: 0, gutter: 'L', label: '11.2 OEM to history' },
+    { from: 2, to: 1, gutter: 'R', label: '11.3 classification to product specialist' },
+    { from: 3, to: 2, gutter: 'R', label: '11.4 contract to contract specialist' }
   ];
 
   /* Small glyphs, drawn inside a badge and centred on the origin. */
@@ -354,6 +406,57 @@
       g.append('path').attr('d', 'M-8,8 h4 l2,-4 l2,7 l2,-3 h6')
         .style('fill', 'none').style('stroke', c).style('stroke-width', 1.1).style('opacity', .8);
     },
+    org: function (g, c) {
+      g.append('rect').attr('x', -7).attr('y', -6).attr('width', 14).attr('height', 13)
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      [[-4,-3],[0,-3],[4,-3],[-4,1],[0,1],[4,1]].forEach(function (q) {
+        g.append('rect').attr('x', q[0] - 1).attr('y', q[1]).attr('width', 2.4).attr('height', 2.4).style('fill', c);
+      });
+    },
+    box: function (g, c) {
+      g.append('path').attr('d', 'M-7,-3 l7,-4 l7,4 v8 l-7,4 l-7,-4 z')
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      g.append('path').attr('d', 'M-7,-3 l7,4 l7,-4 M0,1 v8').style('fill', 'none')
+        .style('stroke', c).style('stroke-width', 1).style('opacity', .7);
+    },
+    doc: function (g, c) {
+      g.append('path').attr('d', 'M-6,-8 h8 l4,4 v12 h-12 z')
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      g.append('path').attr('d', 'M2,-8 v4 h4').style('fill', 'none').style('stroke', c).style('stroke-width', 1);
+      [(-1),2,5].forEach(function (y) {
+        g.append('line').attr('x1', -3.5).attr('x2', 3.5).attr('y1', y).attr('y2', y)
+          .style('stroke', c).style('stroke-width', .9).style('opacity', .65);
+      });
+    },
+    tag: function (g, c) {
+      g.append('path').attr('d', 'M-7,-2 l6,-6 h8 v8 l-6,6 z')
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      g.append('circle').attr('cx', 3.5).attr('cy', -3.5).attr('r', 1.6).style('fill', c);
+    },
+    cog: function (g, c) {
+      g.append('circle').attr('r', 4.5).style('fill', 'none').style('stroke', c).style('stroke-width', 1.3);
+      for (var a = 0; a < 6; a++) {
+        var r1 = 6, r2 = 8.6, t = a * Math.PI / 3;
+        g.append('line')
+          .attr('x1', Math.cos(t) * r1).attr('y1', Math.sin(t) * r1)
+          .attr('x2', Math.cos(t) * r2).attr('y2', Math.sin(t) * r2)
+          .style('stroke', c).style('stroke-width', 1.6).style('stroke-linecap', 'round');
+      }
+    },
+    hier: function (g, c) {
+      g.append('rect').attr('x', -4).attr('y', -9).attr('width', 8).attr('height', 5).attr('rx', 1)
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      g.append('path').attr('d', 'M0,-4 v3 M-6,-1 h12 M-6,-1 v3 M6,-1 v3 M0,-1 v3')
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.1);
+      [-6, 0, 6].forEach(function (x) {
+        g.append('rect').attr('x', x - 3.5).attr('y', 2).attr('width', 7).attr('height', 5).attr('rx', 1)
+          .style('fill', 'none').style('stroke', c).style('stroke-width', 1.2);
+      });
+    },
+    spike: function (g, c) {
+      g.append('path').attr('d', 'M-8,4 l4,0 l2,-9 l3,13 l2,-6 l5,0')
+        .style('fill', 'none').style('stroke', c).style('stroke-width', 1.4);
+    },
     lens: function (g, c) {
       g.append('circle').attr('cx', -1).attr('cy', -1).attr('r', 5.5).style('fill', 'none').style('stroke', c).style('stroke-width', 1.4);
       g.append('line').attr('x1', 3).attr('y1', 3).attr('x2', 8).attr('y2', 8).style('stroke', c).style('stroke-width', 1.6);
@@ -372,81 +475,338 @@
     }
   };
 
+  /* A patient chart on a clipboard: held closed, the page lifts to be read, then
+     drops back. Returns handles so the animation can drive the states without a
+     timer of its own. */
+  function drawChart(g, col) {
+    var closed = g.append('g');
+    closed.append('rect').attr('x', -9).attr('y', -11).attr('width', 18).attr('height', 23).attr('rx', 2)
+      .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.3);
+    closed.append('rect').attr('x', -4).attr('y', -13).attr('width', 8).attr('height', 4).attr('rx', 1.5)
+      .style('fill', col);
+    [-5, -1, 3, 7].forEach(function (y) {
+      closed.append('line').attr('x1', -5).attr('x2', 5).attr('y1', y).attr('y2', y)
+        .style('stroke', col).style('stroke-width', 1).style('opacity', .45);
+    });
+
+    /* the lifted page, hinged at the clip */
+    var open = g.append('g').style('opacity', 0);
+    var page = open.append('g');
+    page.append('rect').attr('x', -9).attr('y', -11).attr('width', 18).attr('height', 23).attr('rx', 2)
+      .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.3);
+    [-5, -1, 3, 7].forEach(function (y) {
+      page.append('line').attr('x1', -5).attr('x2', 5).attr('y1', y).attr('y2', y)
+        .style('stroke', col).style('stroke-width', 1).style('opacity', .55);
+    });
+    var scan = open.append('line').attr('x1', -6).attr('x2', 6)
+      .style('stroke', col).style('stroke-width', 1.6).style('opacity', .9);
+
+    return {
+      /* t: 0 shut, 1 fully lifted. read: 0..1 drives the scan line. */
+      set: function (t, read) {
+        open.style('opacity', t <= 0 ? 0 : 1);
+        if (t > 0) {
+          page.attr('transform', 'translate(0,-11) rotate(' + (-34 * t) + ') translate(0,11)');
+          var y = -6 + 13 * Math.max(0, Math.min(1, read));
+          scan.attr('y1', y).attr('y2', y).style('opacity', read > 0 && read < 1 ? .9 : 0);
+        }
+      }
+    };
+  }
+
+  /* =========================================================================
+     ACCESS VARIANT — what happens after publish: the customer decides who sees
+     which records, scoped on their own hierarchy. Sized for a narrow column, so
+     it sits beside the pipeline rather than extending it.
+
+         renderSpendPipeline('#el', { variant: 'access' })
+     ========================================================================= */
+
+  /* Columns in the customer's own data. A role is a combination of one or more
+     of these column values, which is what decides the records it can see. */
+  var ACCESS_COLS = ['Department', 'Cost centre', 'GL account', 'Legal entity'];
+
+  /* Each role, and the column values that define it. Keep at least one showing
+     two columns combined — that is what makes 'one or more' legible. */
+  var ROLES = [
+    { t: 'Finance',   s: 'Cost centre = all' },
+    { t: 'IT',        s: 'GL account = 6xxx' },
+    { t: 'Plant ops', s: 'Department = 400 + GL = 6xxx' }
+  ];
+
+  function renderAccess(root, animate) {
+    var W = 440, R = 16;
+    var CX = 44, CY = 34;                       /* the customer */
+    var BX = 16, BY = 96, BW = W - 32, BH = 158; /* the rules box */
+    var SPINE = 44, A0 = 314, AGAP = 42;         /* role rows, clear of the box */
+    var CHIP_X = 62, CHIP_W = 116, CHIP_H = 26;
+    var H = A0 + (ROLES.length - 1) * AGAP + 46;
+
+    var svg = root.append('svg')
+      .attr('viewBox', '0 0 ' + W + ' ' + H)
+      .attr('preserveAspectRatio', 'xMidYMin meet')
+      .attr('role', 'img')
+      .attr('aria-label', 'After publish, the customer decides who sees which records. ' +
+            'Roles based access rules are defined by information from the customer — built from columns in their own data such as department, cost ' +
+            'centre, GL account and legal entity \u2014 so each role sees only its own slice: ' +
+            'finance every cost centre, IT only GL 6xxx, plant operations only department 400.')
+      .style('width', '100%').style('height', 'auto').style('display', 'block')
+      .style('font-family', FONT_SANS);
+
+    buildDefs(svg);
+    var gBack = svg.append('g'), gRail = svg.append('g'),
+        gFlow = svg.append('g'), gNode = svg.append('g');
+
+    /* ---- the customer ---------------------------------------------------- */
+    var g = gNode.append('g').attr('transform', 'translate(' + CX + ',' + CY + ')');
+    g.append('circle').attr('r', R).style('fill', C.surface).style('stroke', C.integ).style('stroke-width', 1.5);
+    g.append('circle').attr('r', R).style('fill', C.integ).style('opacity', .10);
+    MINI.customer(g.append('g'), C.integ);
+    gNode.append('text').attr('x', CX + R + 14).attr('y', CY - 1)
+      .style('font-size', '13px').style('font-weight', 650).style('fill', C.ink).text('Customer');
+    gNode.append('text').attr('x', CX + R + 14).attr('y', CY + 15)
+      .style('font-size', '11.5px').style('fill', C.muted).text('decides who sees which records');
+
+    gRail.append('path')
+      .attr('d', 'M' + CX + ',' + (CY + R) + ' C' + CX + ',' + (BY - 24) + ' ' +
+                 (BX + BW / 2) + ',' + (BY - 24) + ' ' + (BX + BW / 2) + ',' + BY)
+      .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.8).style('opacity', .85);
+
+    /* ---- the rules box ---------------------------------------------------- */
+    gBack.append('rect').attr('x', BX).attr('y', BY).attr('width', BW).attr('height', BH).attr('rx', 10)
+      .style('fill', C.surface).style('stroke', C.line2).style('stroke-width', 1.2);
+    gBack.append('path')
+      .attr('d', 'M' + BX + ',' + (BY + 10) + ' a10,10 0 0 1 10,-10 h' + (BW - 20) +
+                 ' a10,10 0 0 1 10,10 v22 h' + (-BW) + ' z')
+      .style('fill', C.ink).style('opacity', .05);
+    gNode.append('line').attr('x1', BX).attr('x2', BX + BW).attr('y1', BY + 32).attr('y2', BY + 32)
+      .style('stroke', C.line);
+    gNode.append('text').attr('x', BX + BW / 2).attr('y', BY + 21).attr('text-anchor', 'middle')
+      .style('font-size', '12.5px').style('font-weight', 650).style('fill', C.ink).text('Roles based access rules');
+    gNode.append('text').attr('x', BX + BW / 2).attr('y', BY + 50).attr('text-anchor', 'middle')
+      .style('font-family', FONT_MONO).style('font-size', '9.5px').style('letter-spacing', '.05em')
+      .style('fill', C.faint).text('defined by information from the customer');
+
+    /* dimensions, two by two */
+    var dw = (BW - 46) / 2, dh = 26;
+    ACCESS_COLS.forEach(function (d, i) {
+      var col = i % 2, row = (i / 2) | 0;
+      var x = BX + 16 + col * (dw + 14), y = BY + 62 + row * (dh + 10);
+      gNode.append('rect').attr('x', x).attr('y', y).attr('width', dw).attr('height', dh).attr('rx', dh / 2)
+        .style('fill', C.surface).style('stroke', C.line2).style('stroke-width', 1.1);
+      gNode.append('text').attr('x', x + dw / 2).attr('y', y + 17).attr('text-anchor', 'middle')
+        .style('font-size', '11px').style('fill', C.muted).text(d);
+    });
+
+    gNode.append('text').attr('x', BX + BW / 2).attr('y', BY + BH - 14).attr('text-anchor', 'middle')
+      .style('font-size', '11px').style('fill', C.muted)
+      .text('a role = one or more of these column values');
+
+    /* ---- down to the roles ------------------------------------------------- */
+    var lastY = A0 + (ROLES.length - 1) * AGAP;
+    gRail.append('path')
+      .attr('d', 'M' + (BX + BW / 2) + ',' + (BY + BH) + ' C' + (BX + BW / 2) + ',' + (BY + BH + 26) + ' ' +
+                 SPINE + ',' + (BY + BH + 20) + ' ' + SPINE + ',' + (A0 - 20))
+      .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.8).style('opacity', .85);
+    gRail.append('line').attr('x1', SPINE).attr('x2', SPINE)
+      .attr('y1', A0 - 20).attr('y2', lastY)
+      .style('stroke', C.integ).style('stroke-width', 1.6).style('opacity', .7);
+
+    /* Sits at BX, not CHIP_X: the connector sweeps down through x ~110 at this
+       height, and a label under it needed a halo that broke the line. */
+    gNode.append('text').attr('x', BX).attr('y', A0 - 30)
+      .style('font-family', FONT_MONO).style('font-size', '9px').style('letter-spacing', '.14em')
+      .style('text-transform', 'uppercase').style('fill', C.faint).text('roles');
+
+    ROLES.forEach(function (a, i) {
+      var y = A0 + i * AGAP;
+      gRail.append('path').attr('d', 'M' + SPINE + ',' + y + ' H' + (CHIP_X - 2))
+        .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.4).style('opacity', .7)
+        .attr('marker-end', 'url(#sp-arrow-integ)');
+      gNode.append('rect').attr('x', CHIP_X).attr('y', y - CHIP_H / 2)
+        .attr('width', CHIP_W).attr('height', CHIP_H).attr('rx', CHIP_H / 2)
+        .style('fill', C.surface).style('stroke', C.integ).style('stroke-width', 1.3);
+      gNode.append('text').attr('x', CHIP_X + CHIP_W / 2).attr('y', y + 4).attr('text-anchor', 'middle')
+        .style('font-size', '11.5px').style('fill', C.integ).text(a.t);
+      gNode.append('text').attr('x', CHIP_X + CHIP_W + 14).attr('y', y + 4)
+        .style('font-size', '11px').style('fill', C.muted).text(a.s);
+    });
+
+    gNode.append('text').attr('x', BX).attr('y', H - 10)
+      .style('font-family', FONT_MONO).style('font-size', '9px').style('letter-spacing', '.06em')
+      .style('fill', C.faint).text('one published set \u00b7 each role sees only its own slice');
+
+    /* ---- the packet divides at the rules ---------------------------------- */
+    if (animate) {
+      var nodes = ROLES.map(function (a, i) {
+        var y = A0 + i * AGAP;
+        var d = 'M' + CX + ',' + CY +
+                ' C' + CX + ',' + (BY - 24) + ' ' + (BX + BW / 2) + ',' + (BY - 24) + ' ' + (BX + BW / 2) + ',' + BY +
+                ' V' + (BY + BH) +
+                ' C' + (BX + BW / 2) + ',' + (BY + BH + 26) + ' ' + SPINE + ',' + (BY + BH + 20) + ' ' +
+                       SPINE + ',' + (A0 - 20) +
+                ' V' + y + ' H' + (CHIP_X - 2);
+        return gFlow.append('path').attr('class', 'a-branch').attr('d', d)
+          .style('fill', 'none').style('stroke', 'none').node();
+      });
+      var lens = nodes.map(function (n) { return n.getTotalLength(); });
+      var maxLen = Math.max.apply(null, lens);
+      var SPEED = 105, HOLD = 90, FADE = 24;
+
+      var tokens = gFlow.selectAll('g.a-token').data(nodes).join('g').attr('class', 'a-token');
+      tokens.each(function () { drawSack(d3.select(this), 0, 0, 0.42, C.integ); });
+
+      /* Idle is not blank: the packet parks on the customer at length 0 and
+         stays visible, so the panel reads as waiting for the handoff rather
+         than as broken during the ten-odd seconds a pipeline lap takes. */
+      var running = false, travelled = 0, last = 0;
+      onArrival(function () { running = true; travelled = 0; });
+
+      d3.timer(function (el) {
+        var dt = Math.min(60, el - last) / 1000; last = el;
+        if (running) {
+          travelled += SPEED * dt;
+          if (travelled > maxLen + HOLD) { running = false; travelled = 0; }
+        } else if (!HAS_PACER) {
+          running = true;                    /* nothing to wait for — free-run */
+        }
+
+        var seen = [];
+        tokens.each(function (n, i) {
+          var L = lens[i], dd = Math.min(travelled, L);
+          var pt = nodes[i].getPointAtLength(dd);
+          var key = Math.round(pt.x) + ':' + Math.round(pt.y);
+          var dup = seen.indexOf(key) >= 0; seen.push(key);
+          var op = dup ? 0 : 1;
+          if (running && travelled < FADE) op *= travelled / FADE;
+          if (travelled > L) op *= Math.max(0.3, 1 - (travelled - L) / HOLD);
+          d3.select(this).attr('transform', 'translate(' + pt.x + ',' + pt.y + ')').style('opacity', op);
+        });
+      });
+    }
+
+    return svg;
+  }
+
   function renderCompact(root, animate) {
     var GAP = 54, TOP = 34, RAIL = 40, R = 16;
     var TX = RAIL + R + 16, CHIP_H = 28, CHIP_GAP = 10;
 
-    var lastY  = TOP + (STAGES.length - 1) * GAP;   /* review lab badge */
-    var fanTop = lastY + R;
-
-    var Y1 = lastY + 74;          /* review branch chips, top edge */
-    var Y2 = Y1 + 66;             /* classification outputs */
-    var YC = Y2 + 46;             /* collector bar */
-    var YP = YC + 42;             /* packaging badge centre */
-    var YU = YP + 62;             /* customer badge centre */
-    var CH = YU + 56;
-
     function chipW(t) { return Math.max(74, t.length * 6.7 + 28); }
 
-    /* --- geometry: review branches ------------------------------------- */
+    /* ---- the specialist building, sized first: the vertical layout below
+       depends on BOX_H ------------------------------------------------------ */
+    var SPEC_NOTE = 'clean \u00b7 normalize \u00b7 enrich';
+    var BOX_W = 424, ROOF = 10, SPEC_R = 15;   /* sized for six specialists */
+    var CY_OFF = 96;                                /* circle centres, from box top */
+    var BOX_H = CY_OFF + 58;
+
+    var SPX = SPECIALISTS.map(function (e, k) {
+      return { t: e.t, t2: e.t2, s: e.s, g: e.g, c: e.c,
+               cx: TX + BOX_W * (k + 0.5) / SPECIALISTS.length };
+    });
+    var SP = TRACKS.map(function (t) { return { c: t.c, cx: TX + BOX_W * t.xf }; });
+
+    /* ---- vertical layout -------------------------------------------------- */
+    var stageY = [];
+    for (var i = 0; i < SPLIT_AT; i++) stageY.push(TOP + i * GAP);
+    var yDis  = stageY[SPLIT_AT - 1];
+    var ySpec = yDis + 82;
+    var cy    = ySpec + CY_OFF;
+    var yImm  = ySpec + BOX_H + 74;
+    for (var j = 0; j < STAGES.length - SPLIT_AT; j++) stageY.push(yImm + j * GAP);
+    var lastY  = stageY[stageY.length - 1];
+    var fanTop = lastY + R;
+
+    var Y1 = lastY + 74, Y2 = Y1 + 66, YC = Y2 + 46;
+    var YG = YC + 50;                               /* 09b sign-off gate */
+    var YP = YG + 66, YU = YP + 62;
+    var CH = YU + 56;
+    var RG = 20;                                    /* gate badge radius */
+
+    var OTHER_X = TX + 228;                        /* the bypass badge, clear of 07's caption */
+    /* The 06 -> (07 | 07b) -> 08 diamond. 06 and 08 sit on the axis midway
+       between the two paths, so both forks and both joins are symmetric. */
+    var MMX = RAIL + (STAGES[SPLIT_AT].dx || 0);
+    var X07 = RAIL + (STAGES[SPLIT_AT + 1].dx || 0);
+    var X08 = RAIL + (STAGES[SPLIT_AT + 2].dx || 0);
+    var X09 = RAIL + (STAGES[SPLIT_AT + 3].dx || 0);   /* validation, below ready for review */
+    var midA = (yDis + ySpec) / 2;
+    var midB = (ySpec + BOX_H + yImm) / 2;
+
+    /* ---- review branches and classification outputs ----------------------- */
+    /* The three non-classification branches drop straight past the classification
+       outputs on their way to the collector, so the row is spaced wide enough for
+       each drop to clear those chips rather than disappear behind them. */
+    var REVIEW_GAP = 36;
     var bx = TX, B = REVIEW_BRANCHES.map(function (r) {
       var w = chipW(r.t), e = { t: r.t, c: r.c, x: bx, w: w, cx: bx + w / 2 };
-      bx += w + CHIP_GAP; return e;
+      bx += w + REVIEW_GAP; return e;
     });
-
-    /* --- geometry: classification outputs, centred under that branch ---- */
     var ows = CLASS_OUTPUTS.map(chipW);
-    var oTot = ows.reduce(function (a, v) { return a + v; }, 0) + (ows.length - 1) * 8;
-    var ox = B[2].cx - oTot / 2;
-    var O = CLASS_OUTPUTS.map(function (t, i) {
-      var e = { t: t, x: ox, w: ows[i], cx: ox + ows[i] / 2 };
-      ox += ows[i] + 8; return e;
+    var oTot = ows.reduce(function (m, v) { return m + v; }, 0) + (ows.length - 1) * 8;
+    var ox = B[2].cx - oTot / 2;   /* under the classification branch */
+    var O = CLASS_OUTPUTS.map(function (t, k) {
+      var e = { t: t, x: ox, w: ows[k], cx: ox + ows[k] / 2 };
+      ox += ows[k] + 8; return e;
     });
 
-    /* --- extents, so the whole thing can be centred --------------------- */
-    var GUT = 48;                                   /* left gutter for the returns */
-    var rawLeft  = Math.min(RAIL - R, B[0].x, O[0].x);
-    var rawRight = Math.max(B[B.length - 1].x + B[B.length - 1].w,
-                            O[O.length - 1].x + O[O.length - 1].w,
-                            TX + 210);
-    var contentLeft  = rawLeft - GUT;               /* covers lanes + rotated label */
-    var contentRight = rawRight + 12;
+    /* ---- extents ----------------------------------------------------------- */
+    var last = B[B.length - 1];
+    var rawLeft  = Math.min(RAIL - R, B[0].x, O[0].x, TX);
+    var rawRight = Math.max(last.x + last.w, O[O.length - 1].x + O[O.length - 1].w,
+                            TX + BOX_W, TX + 230);
+    var GL  = rawLeft - 14;                          /* feedback lane 1    */
+    var RWL = rawLeft - 40;                          /* rework return lane */
+    var GR  = rawRight + 30;                         /* right return lane  */
+    var contentLeft  = rawLeft - 80;
+    var contentRight = GR + 14;
     var contentW = contentRight - contentLeft;
     var CW = Math.max(520, contentW + 24);
     var vbX = contentLeft - (CW - contentW) / 2;
-    var GL = rawLeft - 16;                          /* first return lane */
 
     var svg = root.append('svg')
       .attr('viewBox', vbX + ' 0 ' + CW + ' ' + CH)
       .attr('preserveAspectRatio', 'xMidYMin meet')
       .attr('role', 'img')
-      .attr('aria-label', 'Spend data pipeline: raw spend data is taken in, dissected, cleaned and ' +
-            'classified, then checked in the review lab along three branches - supplier, OEM and ' +
-            'classification, the last splitting into TBM, Level 1 and Non-Tech. Results are packaged, ' +
-            'passed through QA and approved for the customer, who reviews them. Supplier and OEM ' +
-            'findings feed back to history; classification feeds back to the product specialist.')
+      .attr('aria-label', 'Spend data pipeline. Raw spend data is taken in and dissected into two ' +
+            'branches - organizations and product information. Both enter the specialists building, ' +
+            'where supplier, product, contract, pricing, spend anomaly and business hierarchy ' +
+            'specialists clean, normalize ' +
+            'and enrich their own slice, and the work then leaves and is matched and merged back into one record. ' +
+            'The unified record is classified, recovered, and checked in the review lab along supplier, ' +
+            'OEM, classification and contract branches, classification splitting into TBM, Level 1 ' +
+            'and Non-Tech. ' +
+            'Sign-off reads the chart and either approves the work to packaging and the customer, or ' +
+            'sends it back to the review lab. Findings feed back to the specialists.')
       .style('width', '100%').style('height', 'auto').style('display', 'block')
       .style('font-family', FONT_SANS);
 
     buildDefs(svg);
-    var gRail = svg.append('g'), gFlow = svg.append('g'), gNode = svg.append('g');
+    /* Layer order matters: fills sit UNDER the tokens, or a packet travelling
+       inside the building is hidden by the building's own background. */
+    var gBack = svg.append('g'),   /* solid fills (the building)      */
+        gRail = svg.append('g'),   /* connector lines                 */
+        gFlow = svg.append('g'),   /* travelling packets              */
+        gNode = svg.append('g');   /* badges, circles, chips, text    */
 
-    /* --- rail connectors ------------------------------------------------ */
-    STAGES.forEach(function (st, i) {
-      if (i === STAGES.length - 1) return;
-      var y1 = TOP + i * GAP + R, y2 = TOP + (i + 1) * GAP - R;
-      if (st.c === 'dual') {
-        [[-3, C.org], [3, C.prod]].forEach(function (d) {
-          gRail.append('line').attr('x1', RAIL + d[0]).attr('x2', RAIL + d[0]).attr('y1', y1).attr('y2', y2)
-            .style('stroke', d[1]).style('stroke-width', 1.6).style('opacity', .85);
-        });
-      } else {
-        gRail.append('line').attr('x1', RAIL).attr('x2', RAIL).attr('y1', y1).attr('y2', y2)
-          .style('stroke', C[st.c]).style('stroke-width', 1.8).style('opacity', .85);
-      }
+    /* A stage may sit off the rail (dx), which turns its connectors into
+       diagonals — used so the edge into spend classification is visible. */
+    function stageX(k) { return RAIL + (STAGES[k].dx || 0); }
+
+    /* ---- rail connectors, skipping the building ---------------------------- */
+    STAGES.forEach(function (st, k) {
+      if (k === SPLIT_AT - 1 || k === STAGES.length - 1) return;
+      var x1 = stageX(k), x2 = stageX(k + 1);
+      var y1 = stageY[k] + R, y2 = stageY[k + 1] - R, my = (y1 + y2) / 2;
+      var d = (x1 === x2)
+        ? 'M' + x1 + ',' + y1 + ' V' + y2
+        : 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + my + ' ' + x2 + ',' + my + ' ' + x2 + ',' + y2;
+      gRail.append('path').attr('d', d)
+        .style('fill', 'none').style('stroke', C[st.c]).style('stroke-width', 1.8).style('opacity', .85);
     });
 
-    /* --- badges + labels ------------------------------------------------ */
+    /* ---- badges ------------------------------------------------------------ */
     function badge(x, y, st, col) {
       var g = gNode.append('g').attr('transform', 'translate(' + x + ',' + y + ')');
       g.append('circle').attr('r', R).style('fill', C.surface).style('stroke', col).style('stroke-width', 1.5);
@@ -460,49 +820,139 @@
       gNode.append('text').attr('x', x + R + 16).attr('y', y + 15)
         .style('font-size', '11.5px').style('fill', C.muted).text(st.s);
     }
-    STAGES.forEach(function (st, i) {
-      badge(RAIL, TOP + i * GAP, st, C[st.c === 'dual' ? 'org' : st.c]);
+    STAGES.forEach(function (st, k) { badge(stageX(k), stageY[k], st, C[st.c]); });
+
+    /* ---- dissection into the building, and out again to immersion ---------- */
+    SP.forEach(function (e) {
+      gRail.append('path')
+        .attr('d', 'M' + RAIL + ',' + (yDis + R) + ' C' + RAIL + ',' + midA + ' ' +
+                   e.cx + ',' + midA + ' ' + e.cx + ',' + ySpec)
+        .style('fill', 'none').style('stroke', C[e.c]).style('stroke-width', 1.6).style('opacity', .8);
+      gRail.append('path')
+        .attr('d', 'M' + e.cx + ',' + (ySpec + BOX_H) + ' C' + e.cx + ',' + midB + ' ' +
+                   MMX + ',' + midB + ' ' + MMX + ',' + (yImm - R))
+        .style('fill', 'none').style('stroke', C[e.c]).style('stroke-width', 1.6).style('opacity', .8);
     });
 
-    /* --- fan: review lab into its three branches ------------------------ */
-    var fanMid = (fanTop + Y1) / 2;
-    function fanTo(cx, y0, y1) {
-      return 'C' + RAIL + ',' + ((y0 + y1) / 2) + ' ' + cx + ',' + ((y0 + y1) / 2) + ' ' + cx + ',' + y1;
-    }
+    /* ---- the specialist building ------------------------------------------- */
+    gBack.append('rect').attr('x', TX - 9).attr('y', ySpec).attr('width', BOX_W + 18).attr('height', ROOF)
+      .attr('rx', 3).style('fill', C.ink).style('opacity', .10);
+    gBack.append('rect').attr('x', TX).attr('y', ySpec + ROOF).attr('width', BOX_W).attr('height', BOX_H - ROOF)
+      .attr('rx', 6).style('fill', C.surface).style('stroke', C.line2).style('stroke-width', 1.2);
+
+    var sign = gNode.append('text').attr('x', TX + BOX_W / 2).attr('y', ySpec + ROOF + 24)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12.5px').style('font-weight', 650).style('fill', C.ink)
+      .style('paint-order', 'stroke').style('stroke', C.surface).style('stroke-width', 3.5);
+    sign.append('tspan').style('font-family', FONT_MONO).style('font-size', '10px')
+      .style('font-weight', 400).style('fill', C.muted).text('05  ');
+    sign.append('tspan').text('Enrichment');
+    gNode.append('text').attr('x', TX + BOX_W / 2).attr('y', ySpec + ROOF + 40).attr('text-anchor', 'middle')
+      .style('font-family', FONT_MONO).style('font-size', '9.5px').style('letter-spacing', '.05em')
+      .style('fill', C.faint)
+      .style('paint-order', 'stroke').style('stroke', C.surface).style('stroke-width', 3.5).text(SPEC_NOTE);
+
+    /* Work reaching each specialist, and leaving again. */
+    SPX.forEach(function (e) {
+      var inX = SP[e.c === 'org' ? 0 : 1].cx;
+      gRail.append('path')
+        .attr('d', 'M' + inX + ',' + (ySpec + ROOF) + ' C' + inX + ',' + (cy - 26) + ' ' +
+                   e.cx + ',' + (cy - 26) + ' ' + e.cx + ',' + (cy - SPEC_R))
+        .style('fill', 'none').style('stroke', C[e.c]).style('stroke-width', 1).style('opacity', .4);
+      gRail.append('path')
+        .attr('d', 'M' + e.cx + ',' + (cy + SPEC_R) + ' C' + e.cx + ',' + (cy + 26) + ' ' +
+                   inX + ',' + (cy + 26) + ' ' + inX + ',' + (ySpec + BOX_H))
+        .style('fill', 'none').style('stroke', C[e.c]).style('stroke-width', 1).style('opacity', .4);
+    });
+
+    SPX.forEach(function (e) {
+      var g = gNode.append('g').attr('transform', 'translate(' + e.cx + ',' + cy + ')');
+      g.append('circle').attr('r', SPEC_R).style('fill', C.surface).style('stroke', C[e.c]).style('stroke-width', 1.4);
+      g.append('circle').attr('r', SPEC_R).style('fill', C[e.c]).style('opacity', .10);
+      MINI[e.g](g.append('g'), C[e.c]);
+      gNode.append('text').attr('x', e.cx).attr('y', cy + SPEC_R + 16).attr('text-anchor', 'middle')
+        .style('font-size', '10.5px').style('font-weight', 600).style('fill', C.ink)
+        .style('paint-order', 'stroke').style('stroke', C.surface).style('stroke-width', 3.5).text(e.t);
+      if (e.t2) {
+        gNode.append('text').attr('x', e.cx).attr('y', cy + SPEC_R + 27).attr('text-anchor', 'middle')
+          .style('font-size', '10.5px').style('font-weight', 600).style('fill', C.ink)
+          .style('paint-order', 'stroke').style('stroke', C.surface).style('stroke-width', 3.5).text(e.t2);
+      }
+    });
+
+    /* ---- the bypass: contracts and business hierarchy skip classification ---- */
+    var y07 = stageY[SPLIT_AT + 1], y08 = stageY[SPLIT_AT + 2];
+    var byA = (stageY[SPLIT_AT] + y07) / 2, byB = (y07 + y08) / 2;
+    gRail.append('path')
+      .attr('d', 'M' + MMX + ',' + (stageY[SPLIT_AT] + R) +
+                 ' C' + MMX + ',' + byA + ' ' + OTHER_X + ',' + byA + ' ' + OTHER_X + ',' + (y07 - R))
+      .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.6).style('opacity', .8);
+    gRail.append('path')
+      .attr('d', 'M' + OTHER_X + ',' + (y07 + R) +
+                 ' C' + OTHER_X + ',' + byB + ' ' + X08 + ',' + byB + ' ' + X08 + ',' + (y08 - R))
+      .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.6).style('opacity', .8);
+    badge(OTHER_X, y07, OTHER, C.integ);
+
+    /* ---- review fan --------------------------------------------------------- */
+    var revMid = (fanTop + Y1) / 2;
     B.forEach(function (e) {
       gRail.append('path')
-        .attr('d', 'M' + RAIL + ',' + fanTop + ' C' + RAIL + ',' + fanMid + ' ' + e.cx + ',' + fanMid + ' ' + e.cx + ',' + Y1)
+        .attr('d', 'M' + X09 + ',' + fanTop + ' C' + X09 + ',' + revMid + ' ' +
+                   e.cx + ',' + revMid + ' ' + e.cx + ',' + Y1)
         .style('fill', 'none').style('stroke', C[e.c]).style('stroke-width', 1.3).style('opacity', .65);
     });
-
-    /* --- fan: classification into its three outputs --------------------- */
     var subTop = Y1 + CHIP_H, subMid = (subTop + Y2) / 2;
     O.forEach(function (e) {
       gRail.append('path')
-        .attr('d', 'M' + B[2].cx + ',' + subTop + ' C' + B[2].cx + ',' + subMid + ' ' + e.cx + ',' + subMid + ' ' + e.cx + ',' + Y2)
+        .attr('d', 'M' + B[2].cx + ',' + subTop + ' C' + B[2].cx + ',' + subMid + ' ' +
+                   e.cx + ',' + subMid + ' ' + e.cx + ',' + Y2)
         .style('fill', 'none').style('stroke', C.classed).style('stroke-width', 1.2).style('opacity', .6);
     });
 
-    /* --- collector: everything the lab produced goes to packaging ------- */
-    var feeders = [B[0].cx, B[1].cx].concat(O.map(function (e) { return e.cx; }));
-    var fromY   = [Y1 + CHIP_H, Y1 + CHIP_H, Y2 + CHIP_H, Y2 + CHIP_H, Y2 + CHIP_H];
-    feeders.forEach(function (cx, i) {
-      gRail.append('path')
-        .attr('d', 'M' + cx + ',' + fromY[i] + ' C' + cx + ',' + (YC - 14) + ' ' + cx + ',' + YC + ' ' + cx + ',' + YC)
-        .style('fill', 'none').style('stroke', C.integ).style('stroke-width', 1.1).style('opacity', .45);
+    /* ---- collector into the sign-off gate ----------------------------------- */
+    var plain = B.filter(function (e, k) { return k !== 2; });          /* all but classification */
+    var feeders = plain.map(function (e) { return e.cx; })
+                       .concat(O.map(function (e) { return e.cx; }));
+    var fromY = plain.map(function () { return Y1 + CHIP_H; })
+                     .concat(O.map(function () { return Y2 + CHIP_H; }));
+    feeders.forEach(function (fx, k) {
+      gRail.append('line').attr('x1', fx).attr('x2', fx).attr('y1', fromY[k]).attr('y2', YC)
+        .style('stroke', C.integ).style('stroke-width', 1.1).style('opacity', .45);
     });
-    gRail.append('line')
-      .attr('x1', RAIL).attr('x2', Math.max.apply(null, feeders))
+    gRail.append('line').attr('x1', RAIL).attr('x2', Math.max.apply(null, feeders))
       .attr('y1', YC).attr('y2', YC)
       .style('stroke', C.integ).style('stroke-width', 1.3).style('opacity', .55);
-    gRail.append('line').attr('x1', RAIL).attr('x2', RAIL).attr('y1', YC).attr('y2', YP - R)
+    gRail.append('line').attr('x1', RAIL).attr('x2', RAIL).attr('y1', YC).attr('y2', YG - RG)
+      .style('stroke', C.integ).style('stroke-width', 1.8).style('opacity', .85);
+
+    /* approved: on to packaging and the customer */
+    gRail.append('line').attr('x1', RAIL).attr('x2', RAIL).attr('y1', YG + RG).attr('y2', YP - R)
       .style('stroke', C.integ).style('stroke-width', 1.8).style('opacity', .85);
     gRail.append('line').attr('x1', RAIL).attr('x2', RAIL).attr('y1', YP + R).attr('y2', YU - R)
       .style('stroke', C.integ).style('stroke-width', 1.8).style('opacity', .85);
+    gNode.append('text').attr('x', RAIL + 10).attr('y', (YG + RG + YP - R) / 2 + 3)
+      .style('font-family', FONT_MONO).style('font-size', '9px').style('letter-spacing', '.1em')
+      .style('fill', C.integ).text('approved');
 
-    /* --- chips ----------------------------------------------------------- */
+    /* needs updates: back up the left lane to the review lab */
+    var rr0 = 8;
+    gRail.append('path')
+      .attr('d', 'M' + (RAIL - RG) + ',' + YG +
+                 ' H' + (RWL + rr0) + ' Q' + RWL + ',' + YG + ' ' + RWL + ',' + (YG - rr0) +
+                 ' V' + (lastY + rr0) + ' Q' + RWL + ',' + lastY + ' ' + (RWL + rr0) + ',' + lastY +
+                 ' H' + (X09 - R - 2))
+      .style('fill', 'none').style('stroke', C.rework).style('stroke-width', 1.4).style('opacity', .8)
+      .attr('marker-end', 'url(#sp-arrow-rework)');
+    gNode.append('text')
+      .attr('transform', 'translate(' + (RWL - 12) + ',' + ((lastY + YG) / 2) + ') rotate(-90)')
+      .attr('text-anchor', 'middle')
+      .style('font-family', FONT_MONO).style('font-size', '9px').style('letter-spacing', '.12em')
+      .style('fill', C.rework).text('needs updates');
+
+    /* ---- chips --------------------------------------------------------------- */
     function chip(e, y, col, size) {
-      gNode.append('rect').attr('x', e.x).attr('y', y).attr('width', e.w).attr('height', CHIP_H).attr('rx', CHIP_H / 2)
+      gNode.append('rect').attr('x', e.x).attr('y', y).attr('width', e.w).attr('height', CHIP_H)
+        .attr('rx', CHIP_H / 2)
         .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.2);
       gNode.append('text').attr('x', e.cx).attr('y', y + 18).attr('text-anchor', 'middle')
         .style('font-size', (size || 11.5) + 'px').style('fill', col).text(e.t);
@@ -510,101 +960,219 @@
     B.forEach(function (e) { chip(e, Y1, C[e.c]); });
     O.forEach(function (e) { chip(e, Y2, C.classed, 11); });
 
-    /* --- tail badges ------------------------------------------------------ */
+    /* ---- 09b sign-off: the chart is read, then stamped ----------------------- */
+    var gate = gNode.append('g').attr('transform', 'translate(' + RAIL + ',' + YG + ')');
+    gate.append('circle').attr('r', RG).style('fill', C.surface).style('stroke', C.integ).style('stroke-width', 1.5);
+    gate.append('circle').attr('r', RG).style('fill', C.integ).style('opacity', .10);
+    var chart = drawChart(gate.append('g'), C.integ);
+
+    var gLbl = gNode.append('text').attr('x', RAIL + RG + 14).attr('y', YG - 1)
+      .style('font-size', '13px').style('font-weight', 650).style('fill', C.ink);
+    gLbl.append('tspan').style('font-family', FONT_MONO).style('font-size', '10px')
+      .style('font-weight', 400).style('fill', C.integ).text('09b  ');
+    gLbl.append('tspan').text('Sign-off');
+    gNode.append('text').attr('x', RAIL + RG + 14).attr('y', YG + 15)
+      .style('font-size', '11.5px').style('fill', C.muted).text('the chart is read');
+
+    var stampW = 118, stampX = RAIL + RG + 150;
+    var stamp = gNode.append('g').attr('transform', 'translate(' + stampX + ',' + (YG - 14) + ')')
+      .style('opacity', 0);
+    var stampBox = stamp.append('rect').attr('width', stampW).attr('height', 28).attr('rx', 14)
+      .style('fill', C.surface).style('stroke-width', 1.4);
+    var stampTxt = stamp.append('text').attr('x', stampW / 2).attr('y', 18).attr('text-anchor', 'middle')
+      .style('font-size', '11.5px').style('font-weight', 600);
+
     badge(RAIL, YP, TAIL[0], C.integ);
     badge(RAIL, YU, TAIL[1], C.integ);
 
-    /* --- feedback returns ------------------------------------------------- */
-    var fbTarget = TOP + 4 * GAP;                    /* stage 05, specialist suites */
-    var fbLanes = [];
-    FEEDBACK.forEach(function (fb, i) {
-      var src  = B[fb.from];
-      var lane = GL - i * 9;
-      var yb   = Y1 + CHIP_H + 10 + i * 7;           /* staggered so they never overlap */
-      var rr   = 8;
-      fbLanes.push(lane);
-      gRail.append('path')
-        .attr('d', 'M' + src.cx + ',' + (Y1 + CHIP_H) +
-                   ' V' + (yb - rr) +
-                   ' Q' + src.cx + ',' + yb + ' ' + (src.cx - rr) + ',' + yb +
-                   ' H' + (lane + rr) +
-                   ' Q' + lane + ',' + yb + ' ' + lane + ',' + (yb - rr) +
-                   ' V' + (fbTarget + rr) +
-                   ' Q' + lane + ',' + fbTarget + ' ' + (lane + rr) + ',' + fbTarget +
-                   ' H' + (RAIL - R - 2))
+    /* ---- feedback: each return lands on its own specialist ---------------- */
+    FEEDBACK.forEach(function (fb, k) {
+      var src = B[fb.from], dst = SPX[fb.to], rr = 8;
+      var yIn = ySpec + 58 + k * 5;                 /* inside the building, above the circles */
+      var tcx = dst.cx, land = cy - SPEC_R - 3;
+      var d;
+      if (fb.gutter === 'L') {
+        var lane = GL - k * 10;
+        var yb = Y1 + CHIP_H + 10 + k * 7;
+        d = 'M' + src.cx + ',' + (Y1 + CHIP_H) + ' V' + (yb - rr) +
+            ' Q' + src.cx + ',' + yb + ' ' + (src.cx - rr) + ',' + yb +
+            ' H' + (lane + rr) + ' Q' + lane + ',' + yb + ' ' + lane + ',' + (yb - rr) +
+            ' V' + (yIn + rr) + ' Q' + lane + ',' + yIn + ' ' + (lane + rr) + ',' + yIn +
+            ' H' + (tcx - rr) + ' Q' + tcx + ',' + yIn + ' ' + tcx + ',' + (yIn + rr) +
+            ' V' + land;
+      } else {
+        var laneR = GR + (k - 2) * 12;
+        var ybR = Y1 + CHIP_H + 10 + k * 7;
+        d = 'M' + src.cx + ',' + (Y1 + CHIP_H) + ' V' + (ybR - rr) +
+            ' Q' + src.cx + ',' + ybR + ' ' + (src.cx + rr) + ',' + ybR +
+            ' H' + (laneR - rr) + ' Q' + laneR + ',' + ybR + ' ' + laneR + ',' + (ybR - rr) +
+            ' V' + (yIn + rr) + ' Q' + laneR + ',' + yIn + ' ' + (laneR - rr) + ',' + yIn +
+            ' H' + (tcx + rr) + ' Q' + tcx + ',' + yIn + ' ' + tcx + ',' + (yIn + rr) +
+            ' V' + land;
+      }
+      gNode.append('path').attr('d', d)
         .style('fill', 'none').style('stroke', C[src.c]).style('stroke-width', 1.1)
-        .style('stroke-dasharray', '4 4').style('opacity', .55)
+        .style('stroke-dasharray', '4 4').style('opacity', .6)
         .attr('marker-end', 'url(#sp-arrow-' + src.c + ')');
     });
 
-    /* Label set vertically in the gutter — laid horizontally it ran straight
-       through the stage captions. */
-    var fbMidY = (fbTarget + Y1) / 2;
-    var fbX = fbLanes[fbLanes.length - 1] - 9;
     gNode.append('text')
-      .attr('transform', 'translate(' + fbX + ',' + fbMidY + ') rotate(-90)')
+      .attr('transform', 'translate(' + (RWL - 26) + ',' + ((ySpec + Y1) / 2) + ') rotate(-90)')
       .attr('text-anchor', 'middle')
       .style('font-family', FONT_MONO).style('font-size', '9px').style('letter-spacing', '.14em')
       .style('text-transform', 'uppercase').style('fill', C.faint)
-      .text('11 · feedback to processing');
+      .text('11 \u00b7 continuous learning');
 
-    /* --- animation -------------------------------------------------------- */
+    /* ---- animation ------------------------------------------------------------
+       Timed by milestone, not raw distance, so every packet reaches the same
+       semantic point at the same moment. That is what lets the two branches merge
+       cleanly at immersion, and what holds the packets together at the gate.
+
+       Phases: 0 →dissection · 1 →building · 2 →specialist · 3 →out of building
+               4 →immersion · 5 →review lab · 6 →branch chip · 7 →class output
+               8 →sign-off · 9 dwell (zero length: the chart is read)
+               10 →tail, chosen by the verdict
+       -------------------------------------------------------------------------- */
     if (animate) {
-      /* One path per delivered outcome. Identical prefixes mean tokens sit on
-         top of one another while the record is still whole; duplicates are
-         hidden each frame, so the packet visibly becomes three at the review
-         lab and five once classification sub-divides. */
-      var routes = [];
-      function tail(cx, y) {
-        return ' C' + cx + ',' + (YC - 14) + ' ' + cx + ',' + YC + ' ' + cx + ',' + YC +
-               ' H' + RAIL + ' V' + (YU - R);
-      }
-      [0, 1].forEach(function (i) {
-        routes.push('M' + RAIL + ',' + TOP + ' V' + fanTop +
-          ' C' + RAIL + ',' + fanMid + ' ' + B[i].cx + ',' + fanMid + ' ' + B[i].cx + ',' + Y1 +
-          ' V' + (Y1 + CHIP_H) + tail(B[i].cx));
-      });
-      O.forEach(function (e) {
-        routes.push('M' + RAIL + ',' + TOP + ' V' + fanTop +
-          ' C' + RAIL + ',' + fanMid + ' ' + B[2].cx + ',' + fanMid + ' ' + B[2].cx + ',' + Y1 +
-          ' V' + subTop +
-          ' C' + B[2].cx + ',' + subMid + ' ' + e.cx + ',' + subMid + ' ' + e.cx + ',' + Y2 +
-          ' V' + (Y2 + CHIP_H) + tail(e.cx));
+      /* One piece of work per downstream endpoint. The product specialist yields
+         two - an OEM finding and a classification - so six routes cover five
+         specialists; the pair coincide inside the building and read as one. */
+      var ROUTES = [
+        { spec: 0, branch: 0, out: -1 },   /* supplier      -> supplier check   */
+        { spec: 1, branch: 1, out: -1 },   /* product       -> OEM check        */
+        { spec: 2, branch: 3, out: -1 },   /* contract      -> contract check   */
+        { spec: 1, branch: 2, out: 0 },    /* product       -> classification   */
+        { spec: 3, branch: 2, out: 1 },    /* pricing       -> classification   */
+        { spec: 4, branch: 2, out: 2 },    /* spend anomaly -> classification   */
+        { spec: 5, branch: 0, out: -1 }    /* business hierarchy -> supplier    */
+      ].map(function (r) {
+        r.track = SPX[r.spec].c === 'org' ? 0 : 1;
+        return r;
       });
 
-      var nodes = routes.map(function (d) {
-        return gFlow.append('path').attr('class', 'c-branch').attr('d', d)
-          .style('fill', 'none').style('stroke', 'none').node();
-      });
-      var lens = nodes.map(function (n) { return n.getTotalLength(); });
-      var maxLen = Math.max.apply(null, lens);
-      var railLen = lastY - TOP;
-      var SPEED = 115, HOLD = 120, FADE = 26;
+      var nodesA = [], nodesB = [], milesA = [], milesB = [];
+      ROUTES.forEach(function (r) {
+        var sp = SP[r.track], e = SPX[r.spec], b = B[r.branch], head = [];
+        head.push('M' + RAIL + ',' + TOP + ' V' + yDis);
+        head.push(' C' + RAIL + ',' + midA + ' ' + sp.cx + ',' + midA + ' ' + sp.cx + ',' + (ySpec + ROOF));
+        head.push(' C' + sp.cx + ',' + (cy - 26) + ' ' + e.cx + ',' + (cy - 26) + ' ' + e.cx + ',' + cy);
+        head.push(' C' + e.cx + ',' + (cy + 26) + ' ' + sp.cx + ',' + (cy + 26) + ' ' + sp.cx + ',' + (ySpec + BOX_H));
+        head.push(' C' + sp.cx + ',' + midB + ' ' + MMX + ',' + midB + ' ' + MMX + ',' + yImm);
+        if (BYPASS.indexOf(r.spec) >= 0) {
+          head.push(' C' + MMX + ',' + byA + ' ' + OTHER_X + ',' + byA + ' ' + OTHER_X + ',' + y07);
+          head.push(' C' + OTHER_X + ',' + byB + ' ' + X08 + ',' + byB + ' ' + X08 + ',' + y08);
+        } else {
+          head.push(' C' + MMX + ',' + byA + ' ' + X07 + ',' + byA + ' ' + X07 + ',' + y07);
+          head.push(' C' + X07 + ',' + byB + ' ' + X08 + ',' + byB + ' ' + X08 + ',' + y08);
+        }
+        head.push(' C' + X08 + ',' + ((y08 + lastY) / 2) + ' ' + X09 + ',' + ((y08 + lastY) / 2) +
+                  ' ' + X09 + ',' + lastY);
+        head.push(' C' + X09 + ',' + revMid + ' ' + b.cx + ',' + revMid + ' ' + b.cx + ',' + Y1);
+        if (r.out >= 0) {
+          var o = O[r.out];
+          head.push(' V' + subTop + ' C' + b.cx + ',' + subMid + ' ' + o.cx + ',' + subMid + ' ' + o.cx + ',' + Y2);
+          head.push(' V' + (Y2 + CHIP_H) + ' V' + YC + ' H' + RAIL + ' V' + YG);
+        } else {
+          head.push(' V' + (Y1 + CHIP_H));
+          head.push(' V' + YC + ' H' + RAIL + ' V' + YG);
+        }
+        head.push(' V' + YG);                                     /* dwell, zero length */
 
-      var tokens = gFlow.selectAll('g.c-token').data(nodes).join('g').attr('class', 'c-token');
+        var tailA = ' V' + (YU - R);
+        var tailB = ' H' + (RWL + 8) + ' V' + lastY + ' H' + X09;
+
+        function build(tail, milesInto) {
+          var probe = gFlow.append('path').attr('class', 'c-branch')
+            .style('fill', 'none').style('stroke', 'none');
+          var acc = '', ms = [0];
+          head.concat([tail]).forEach(function (sg) {
+            acc += sg; probe.attr('d', acc); ms.push(probe.node().getTotalLength());
+          });
+          milesInto.push(ms);
+          return probe.node();
+        }
+        nodesA.push(build(tailA, milesA));
+        nodesB.push(build(tailB, milesB));
+        r.col = C[TRACKS[r.track].c];
+        r.midCol = BYPASS.indexOf(r.spec) >= 0 ? C.integ : C.classed;
+      });
+
+      var PH = milesA[0].length - 1;                  /* 13 phases */
+      var GATE_PH = PH - 2;
+      var MID_PH  = 6;                                /* 07 row -> 08: colour depends on the route */
+      var PHASE_COL = [C.raw, null, null, null, null,
+                       C.integ, null, C.classed, C.classed, C.classed,
+                       C.integ, C.integ, null];
+      var SPEED = 0.95, HOLD = 1.1, FADE = 0.22;      /* phases per second */
+
+      var tokens = gFlow.selectAll('g.c-token').data(ROUTES).join('g').attr('class', 'c-token');
       tokens.each(function () { drawSack(d3.select(this), 0, 0, 0.44, C.raw); });
 
-      var travelled = 0, last = 0;
+      /* Two cycles approved, then one sent back. A rejected pass does not restart
+         from intake: the packets arrive back at the review lab and set off down
+         from there — milestone 6, the point tail B lands on — so the resume is
+         seamless. That retry is always approved, or the loop could never leave. */
+      var REVIEW_PH = 8;
+      var REWORK_HOLD = 0.45;
+      var cycle = 0, rework = false;
+      function pickVerdict() { rework = (cycle % 3) === 2; }
+      pickVerdict();
+
+      /* The packet reaches 12 Customer at the end of the last phase, and only
+         on an approved pass — a rework lap turns back at the review lab and
+         never gets there. Announce that crossing once per lap; the access
+         diagram sets off on it. */
+      HAS_PACER = true;
+      var announced = false;
+
+      var prog = 0, last = 0;
       d3.timer(function (el) {
         var dt = Math.min(60, el - last) / 1000; last = el;
-        travelled += SPEED * dt;
-        if (travelled > maxLen + HOLD) travelled = 0;
+        prog += SPEED * dt;
+        if (prog > PH + (rework ? REWORK_HOLD : HOLD)) {
+          if (rework) { rework = false; prog = REVIEW_PH; }
+          else { cycle++; pickVerdict(); prog = 0; }
+          announced = false;
+        }
+        if (!rework && !announced && prog >= PH) { announced = true; announceArrival(); }
+
+        var k = Math.min(PH - 1, Math.floor(prog));
+        var f = Math.min(1, prog - k);
+        var onTail = k >= PH - 1;
+
+        var gp = prog - GATE_PH;
+        var lift = 0, read = 0;
+        if (gp > 0 && gp < 1) {
+          lift = gp < 0.25 ? gp / 0.25 : (gp > 0.8 ? Math.max(0, (1 - gp) / 0.2) : 1);
+          read = gp < 0.25 ? 0 : Math.min(1, (gp - 0.25) / 0.55);
+        }
+        chart.set(lift, read);
+
+        var showStamp = prog > GATE_PH + 0.78;
+        stamp.style('opacity', showStamp ? Math.min(1, (prog - GATE_PH - 0.78) / 0.18) : 0);
+        if (showStamp) {
+          stampBox.style('stroke', rework ? C.rework : C.integ);
+          stampTxt.style('fill', rework ? C.rework : C.integ)
+                  .text(rework ? 'needs updates' : 'approved');
+        }
 
         var seen = [];
-        tokens.each(function (node, i) {
-          var L = lens[i], d = Math.min(travelled, L);
-          var pt = nodes[i].getPointAtLength(d);
+        tokens.each(function (r, idx) {
+          var useB = rework && onTail;
+          var node = useB ? nodesB[idx] : nodesA[idx];
+          var ms   = useB ? milesB[idx] : milesA[idx];
+          var d = ms[k] + f * (ms[k + 1] - ms[k]);
+          var pt = node.getPointAtLength(d);
           var key = Math.round(pt.x) + ':' + Math.round(pt.y);
           var dup = seen.indexOf(key) >= 0;
           seen.push(key);
 
-          var si = Math.floor((d / railLen) * STAGES.length);
-          var st = STAGES[Math.max(0, Math.min(STAGES.length - 1, si))];
-          var col = d > railLen ? C.integ : C[st.c === 'dual' ? 'org' : st.c];
-
+          var col = (k === PH - 1) ? (rework ? C.rework : C.integ)
+                  : (k === MID_PH) ? r.midCol
+                  : (PHASE_COL[k] || r.col);
           var op = dup ? 0 : 1;
-          if (travelled < FADE) op *= travelled / FADE;
-          if (travelled > L) op *= Math.max(0.25, 1 - (travelled - L) / HOLD);
+          if (prog < FADE) op *= prog / FADE;
+          if (prog > PH && !rework) op *= Math.max(0.25, 1 - (prog - PH) / HOLD);
 
           d3.select(this)
             .attr('transform', 'translate(' + pt.x + ',' + pt.y + ')')
@@ -626,6 +1194,7 @@
     var reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var animate = (opts.animate !== undefined) ? opts.animate : !reduced;
 
+    if (opts.variant === 'access')  return renderAccess(root, animate);
     if (opts.variant === 'compact') return renderCompact(root, animate);
     layout();
 
@@ -635,7 +1204,7 @@
       .attr('role', 'img')
       .attr('aria-label', 'CXO Nexus spend data pipeline, drawn as a surgical theatre: ' +
             'contributors hand over sacks of spend data, which are stacked on gurneys, wheeled into ' +
-            'operating rooms, assigned a patient id and dissected into organizations and products. ' +
+            'operating rooms, assigned a record id and dissected into organizations and products. ' +
             'Supplier and product specialists clean, normalize and enrich each stream, a classification ' +
             'physician names the spend, and the result is checked three ways in the review lab.')
       .style('width', '100%')
@@ -1029,7 +1598,7 @@
 
   function buildDefs(svg) {
     var defs = svg.append('defs');
-    ['raw', 'org', 'prod', 'integ', 'classed', 'muted'].forEach(function (k) {
+    ['raw', 'org', 'prod', 'integ', 'classed', 'rework', 'muted'].forEach(function (k) {
       defs.append('marker')
         .attr('id', 'sp-arrow-' + k)
         .attr('viewBox', '0 0 10 10')
