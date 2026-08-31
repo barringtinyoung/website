@@ -192,8 +192,11 @@
            border:1px solid var(--line); }
   .grid2 { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line);
            border:1px solid var(--line); }
-  @media (max-width:900px){ .grid3{ grid-template-columns:repeat(2,1fr) } }
-  @media (max-width:620px){ .grid3,.grid2{ grid-template-columns:1fr } }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+           border:1px solid var(--line); }
+  @media (max-width:900px){ .grid3{ grid-template-columns:repeat(2,1fr) }
+                            .grid4{ grid-template-columns:repeat(2,1fr) } }
+  @media (max-width:620px){ .grid3,.grid2,.grid4{ grid-template-columns:1fr } }
   .cell { background:var(--ground); padding:1.45rem 1.35rem 1.55rem;
           display:flex; flex-direction:column; gap:.5rem; transition:background .18s ease; }
   .cell:hover { background:var(--surface); }
@@ -215,6 +218,10 @@
                    line-height:1; padding-top:.15rem; font-variant-numeric:tabular-nums; }
   .stepitem h4 { margin:0 0 .35rem; font-size:1.08rem; font-weight:650; }
   .stepitem p { margin:0; color:var(--muted); font-size:.9rem; max-width:64ch; }
+  /* The cost of skipping the step. The page's lede promises this framing, so
+     every step states it outright instead of leaving it implied. */
+  .stepitem .why { margin:.6rem 0 0; font-size:.83rem; color:var(--faint);
+                   padding-left:.75rem; border-left:2px solid var(--line-2); }
   .stepitem ul { margin:.5rem 0 0; padding-left:1.05rem; color:var(--muted); font-size:.86rem; }
   .stepitem li { margin:.18rem 0; }
 
@@ -410,6 +417,20 @@
                      text-transform:uppercase; color:var(--accent); margin-top:auto; padding-top:.6rem; }
   .foot-in .rights { margin-left:auto; font-family:var(--mono); font-size:.69rem; color:var(--faint); }
 
+  /* The white paper is the only view that is simply text rather than cards and
+     lists, so it gets a reading column of its own. */
+  .paper { max-width:var(--measure); }
+  .paper > h3:first-child { margin-top:0; }
+  .paper h3 { font-family:var(--serif); font-size:1.3rem; font-weight:600; letter-spacing:-.01em;
+              margin:2.4rem 0 .7rem; }
+  .paper h4 { font-size:.95rem; font-weight:650; margin:1.5rem 0 .5rem; }
+  .paper p { margin:0 0 1.05rem; color:var(--muted); }
+  .paper ul { margin:0 0 1.1rem; padding-left:1.1rem; color:var(--muted); }
+  .paper li { margin:.35rem 0; }
+  .paper b { color:var(--ink); font-weight:650; }
+  .paper .why { border-left:2px solid var(--line-2); padding-left:.9rem; font-size:.9rem;
+                color:var(--faint); }
+
   .note { font-family:var(--mono); font-size:.73rem; color:var(--faint); letter-spacing:.04em; }
 
   /* Touch devices: raise every control to a 44px minimum tap target.
@@ -438,7 +459,7 @@
         <span class="mono-badge">R<em>&amp;</em>A</span>
         <span class="wordmark">RIVERTON <em>&amp;</em> ASSOCIATES, INC.</span>
       </div>
-      <a class="btn" href="mailto:***REMOVED-EMAIL***">Start a conversation</a>
+      <button type="button" class="btn js-chat-open">Start a conversation</button>
     </div>
     <div class="tabrow">
       <div class="tabs" role="tablist" aria-label="Sections">
@@ -454,10 +475,10 @@
         <button class="tab" role="tab" data-view="about"       aria-selected="false">About Us</button>
       </div>
       <span class="icon-actions top">
-        <a class="icon-btn sm" href="tel:***REMOVED-PHONE***" data-tip="Call us"
-           aria-label="Call Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg></a>
-        <a class="icon-btn sm" href="mailto:***REMOVED-EMAIL***" data-tip="Email us"
-           aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></a>
+        <button type="button" class="icon-btn sm" data-tel data-tip="Call us"
+                aria-label="Call Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg></button>
+        <button type="button" class="icon-btn sm" data-mail="short" data-tip="Email us"
+                aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></button>
         <button type="button" class="icon-btn sm js-chat-open" data-tip="Chat with Rivet"
                 aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg></button>
       </span>
@@ -758,9 +779,9 @@
       <div class="wrap">
         <div class="eyebrow">Approach to solving business problems</div>
         <h1>A method designed to <span class="hl">not fail quietly.</span></h1>
-        <p class="lede">Eight steps, in order. Each one exists because skipping it is how AI and
+        <p class="lede">Nine steps, in order. Each one exists because skipping it is how AI and
           machine learning programs usually die — expensively, and long after the point where
-          anyone could have corrected course.</p>
+          anyone could have corrected course. So each one says what skipping it costs.</p>
       </div>
     </header>
 
@@ -770,36 +791,61 @@
         <div class="steps-list">
           <div class="stepitem"><div class="idx">01</div><div>
             <h4>Clearly define the business problem</h4>
-            <p>Identify a specific, measurable challenge, align it with strategic goals, and define
-               what success will look like before any modeling begins.</p></div></div>
+            <p>Identify a specific, measurable challenge, agree what success looks like, and tie it
+               to a strategic objective before any modelling begins. Resist broadening the scope —
+               a problem that grows during delivery is a problem nobody agreed to solve.</p>
+            <p class="why">A poorly framed problem is the largest single cause of failure, and
+               everything downstream inherits it.</p></div></div>
           <div class="stepitem"><div class="idx">02</div><div>
             <h4>Ensure data availability and quality</h4>
-            <p>Assess the relevant data honestly, establish its quality, and keep it current enough
-               to support continuous training.</p></div></div>
+            <p>Assess the relevant data honestly, establish its quality, and confirm it actually
+               contains the patterns the problem depends on.</p>
+            <p class="why">No amount of modelling recovers from data that does not hold the
+               answer.</p></div></div>
           <div class="stepitem"><div class="idx">03</div><div>
             <h4>Set up efficient data management</h4>
-            <p>Build a robust pipeline for acquisition, labeling, and updating, so the model is fed
-               by a process rather than by heroics.</p></div></div>
+            <p>Build a robust pipeline for acquisition, labelling and updating, so the model is fed
+               by a process rather than by heroics.</p>
+            <p class="why">Without a pipeline the first model becomes the last one, because
+               retraining is a project instead of a routine.</p></div></div>
           <div class="stepitem"><div class="idx">04</div><div>
+            <h4>Set realistic accuracy and feasibility targets</h4>
+            <p>Agree what good enough means, measured against real-world benchmarks rather than
+               theoretical ceilings, and re-check at each stage that the solution stays feasible
+               with the people, tools and budget actually available.</p>
+            <p class="why">A project with no achievable target cannot tell success from failure
+               — and perfection was never on the table.</p></div></div>
+          <div class="stepitem"><div class="idx">05</div><div>
+            <h4>Build a prototype</h4>
+            <p>Prove the approach at small scale before committing to it. Test it against the
+               target, and use what comes back to correct the problem definition and the data work
+               while corrections are still cheap.</p>
+            <p class="why">Untested assumptions get tested in production instead: at full cost,
+               in front of everyone.</p></div></div>
+          <div class="stepitem"><div class="idx">06</div><div>
+            <h4>Establish training &amp; deployment at scale</h4>
+            <p>A scalable training framework and a deployment path that makes shipping a model a
+               routine event rather than a project — sized for real volumes and real running cost.</p>
+            <p class="why">A model that cannot be retrained or redeployed on demand starts
+               decaying the day it ships.</p></div></div>
+          <div class="stepitem"><div class="idx">07</div><div>
             <h4>Implement feedback loops</h4>
             <p>Regular retraining and fine-tuning, with monitoring that tells you when performance
-               is drifting before your users do.</p></div></div>
-          <div class="stepitem"><div class="idx">05</div><div>
-            <h4>Establish training &amp; deployment processes</h4>
-            <p>A scalable training framework and a deployment path that makes shipping a model a
-               routine event rather than a project.</p></div></div>
-          <div class="stepitem"><div class="idx">06</div><div>
+               is drifting before your users do.</p>
+            <p class="why">Without one, the system is accurate on the day it launched and
+               quietly less so every day after.</p></div></div>
+          <div class="stepitem"><div class="idx">08</div><div>
+            <h4>Deliver outputs into the business</h4>
+            <p>Get results in front of the people who make the decisions — in the systems they
+               already use, in a form they can act on.</p>
+            <p class="why">An accurate model nobody acts on has produced nothing. Delivery is
+               part of the work, not an afterthought.</p></div></div>
+          <div class="stepitem"><div class="idx">09</div><div>
             <h4>Develop in-house expertise</h4>
             <p>Build cross-functional teams and train internal staff to lead the work, so capability
-               stays after the engagement ends.</p></div></div>
-          <div class="stepitem"><div class="idx">07</div><div>
-            <h4>Encourage innovation and experimentation</h4>
-            <p>Create the space — innovation labs, sanctioned experiments — for a culture that can
-               find the next opportunity itself.</p></div></div>
-          <div class="stepitem"><div class="idx">08</div><div>
-            <h4>Align initiatives with business strategy</h4>
-            <p>Keep every effort tied to core objectives, and drive stakeholder engagement to earn
-               real buy-in and sustained commitment.</p></div></div>
+               stays after the engagement ends.</p>
+            <p class="why">Capability that leaves with the consultants was rented, not
+               built.</p></div></div>
         </div>
       </div>
     </section>
@@ -807,13 +853,19 @@
     <section>
       <div class="wrap">
         <div class="sec-head"><h2>What the method delivers</h2></div>
-        <div class="grid3">
+        <div class="grid4">
           <div class="cell"><span class="n">Clarity</span><h3>A focused problem</h3>
-            <p>A measurable challenge worth solving, agreed before investment.</p></div>
+            <p>A measurable challenge worth solving, with an achievable target agreed before
+               investment.</p></div>
           <div class="cell"><span class="n">Readiness</span><h3>Data and process</h3>
-            <p>Data that is ready and well managed, with the internal processes to keep it that way.</p></div>
-          <div class="cell"><span class="n">Execution</span><h3>Iterative build</h3>
-            <p>Models built and refined iteratively and scalably, with feedback designed in.</p></div>
+            <p>Data that is ready and well managed, with the pipeline and the people to keep it
+               that way.</p></div>
+          <div class="cell"><span class="n">Proof</span><h3>A working prototype</h3>
+            <p>Evidence at small scale that the approach delivers, before the commitment is
+               made.</p></div>
+          <div class="cell"><span class="n">Scale</span><h3>Production and feedback</h3>
+            <p>Deployed into the systems that use it, monitored and improved as conditions
+               change.</p></div>
         </div>
         <p class="sec-lede" style="margin:2rem 0 0">The outcome is the point: improved security,
           reduced cost, and measurably better operational efficiency — not a model that performs
@@ -828,7 +880,7 @@
           <p>Bring us a business challenge and we will build a roadmap tailored to your
              organization — starting with whether AI is the right answer at all.</p>
         </div>
-        <a class="btn" href="mailto:***REMOVED-EMAIL***">Set up a conversation</a>
+        <button type="button" class="btn" data-mail="conversation">Set up a conversation</button>
       </div>
     </div>
   </div>
@@ -973,7 +1025,7 @@
           <p>Send a representative sample and we will run it through resolution and show you what
              your spend actually looks like — before any commitment.</p>
         </div>
-        <a class="btn" href="mailto:***REMOVED-EMAIL***">***REMOVED-EMAIL***</a>
+        <button type="button" class="btn" data-mail="conversation">Email us a sample</button>
       </div>
     </div>
   </div>
@@ -1230,14 +1282,16 @@
       <div class="wrap">
         <div class="lead-post">
           <div>
-            <div class="postmeta"><span class="cat">Applied AI</span><span>14 July 2026</span><span>8 min read</span></div>
-            <h3>Most AI programs die at step two</h3>
-            <p>Everyone agrees data quality matters, and almost nobody budgets for it. The failure is
-              rarely the model — it is committing to a twelve-month roadmap before anyone has
-              honestly assessed whether the data can support the question being asked.</p>
+            <div class="postmeta"><span class="cat">White paper</span><span>31 August 2026</span><span>5 min read</span></div>
+            <h3>Maximizing AI and machine learning value</h3>
+            <p>A practitioner's approach: frame the problem, establish the data, build the process,
+              and prove it small before committing — then ten steps that decide whether an AI
+              investment returns anything at all.</p>
+            <button type="button" class="btn" data-goto="whitepaper"
+                    style="margin-top:1.2rem">Read the white paper</button>
           </div>
-          <div class="pull">If you cannot describe the business problem in one measurable sentence,
-            no amount of modeling will rescue it.</div>
+          <div class="pull">Set realistic accuracy expectations: perfection is not achievable.
+            Prefer a feasible solution to a theoretically better one.</div>
         </div>
       </div>
     </section>
@@ -1290,8 +1344,8 @@
             <span class="more">Read →</span>
           </div>
         </div>
-        <p class="note" style="margin-top:1.4rem">Sample entries — placeholder content shown for
-          layout. Real posts to be supplied.</p>
+        <p class="note" style="margin-top:1.4rem">The six entries above are samples — placeholder
+          content shown for layout. Real posts to be supplied.</p>
       </div>
     </section>
 
@@ -1307,6 +1361,177 @@
     </div>
   </div>
 
+  <!-- ==================== WHITE PAPER ==================== -->
+  <!-- Reached from the blog's featured entry (data-goto="whitepaper"); it has no
+       tab of its own, which is why 'whitepaper' must stay in the VIEWS array. -->
+  <div class="view" id="view-whitepaper" role="tabpanel">
+    <header class="lead">
+      <div class="wrap">
+        <div class="eyebrow">White paper · 31 August 2026</div>
+        <h1>Maximizing AI and machine learning value — <span class="hl">a practitioner's approach.</span></h1>
+        <p class="lede">AI and machine learning return value when they are pointed at a defined
+          problem, fed data that actually contains the answer, and built on a process someone can
+          repeat. Most programs fail on one of those three long before a model is trained.</p>
+        <p class="lede">This paper sets out the approach: how to frame the problem, what to establish
+          about the data before committing, the process that keeps a model useful after launch, and
+          why the prototype comes before the roadmap.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Introduction</h3>
+          <p>AI and ML capability keeps improving, and it keeps getting easier to obtain. That is not
+            what decides the outcome. Implementing these systems takes more than adopting the
+            technology — it takes a clear strategy for identifying the right problem, sourcing and
+            preparing the right data, and designing something that scales and can be measured.</p>
+          <p>What follows is that work, in the order it has to happen.</p>
+
+          <h3>1. Define a clear business problem</h3>
+          <p>Every initiative starts here, and most of the ones that fail failed here. Without a
+            well-defined challenge, even a sophisticated model produces nothing anyone can use.</p>
+          <h4>Key considerations</h4>
+          <ul>
+            <li><b>Specificity.</b> The problem must be well defined and aimed at a measurable
+              business outcome.</li>
+            <li><b>Success metrics.</b> Set metrics that are both relevant and attainable, so progress
+              is visible while there is still time to act on it.</li>
+            <li><b>Avoid scope creep.</b> Resist broadening the problem. A tight definition is what
+              keeps the project on track.</li>
+          </ul>
+          <p class="why"><b>Why it matters.</b> A poorly defined problem produces misaligned
+            expectations, wasted resources, and nothing of value at the end of it. A specific problem
+            with measurable outcomes is the foundation everything else is built on.</p>
+
+          <h3>2. Prepare the right data</h3>
+          <p>A model is only as good as what trains it. Preparation is about more than cleanliness:
+            the data has to align with the business problem and actually contain the patterns the
+            question depends on.</p>
+          <h4>Key considerations</h4>
+          <ul>
+            <li><b>Alignment with business objectives.</b> The data must directly support the problem
+              at hand.</li>
+            <li><b>Data quality.</b> Clean, consistent, and representative of the domain.</li>
+            <li><b>Relevant patterns.</b> Models predict from patterns. If the pattern is not in the
+              data, no amount of modelling will put it there.</li>
+          </ul>
+          <p class="why"><b>Why it matters.</b> Without relevant, high-quality data the initiative
+            cannot succeed, whatever is spent on it. This step establishes whether the right data is
+            in place before the commitment is made.</p>
+
+          <h3>3. Develop an effective process</h3>
+          <p>Consistent results come from a process, not from effort. Data preparation, model
+            training and scaling all have to be repeatable — and the process needs a feedback loop,
+            so the model keeps improving instead of quietly decaying.</p>
+          <h4>Key considerations</h4>
+          <ul>
+            <li><b>End-to-end process.</b> A clear route from data preparation through training to
+              iterative feedback.</li>
+            <li><b>Resource allocation.</b> Dedicated teams and tools, allocated deliberately rather
+              than borrowed.</li>
+            <li><b>Monitoring and adjustment.</b> Watch performance, and change the process when the
+              numbers say to.</li>
+          </ul>
+          <p class="why"><b>Why it matters.</b> A structured process is what makes output reliable
+            rather than occasional, and it leaves room to refine and scale without starting again.</p>
+
+          <h3>4. Build a prototype</h3>
+          <p>Prototype before committing. A prototype tests the assumptions made when the problem was
+            framed and the data assessed — at the point where being wrong is still cheap.</p>
+          <h4>Key considerations</h4>
+          <ul>
+            <li><b>Proof of concept.</b> Show that the model delivers the expected result at small
+              scale.</li>
+            <li><b>Performance testing.</b> Measure it; do not infer it.</li>
+            <li><b>Feedback collection.</b> Use what the prototype returns to correct the solution
+              before it is scaled.</li>
+          </ul>
+          <p class="why"><b>Why it matters.</b> Prototyping is how risk comes out of a programme. It
+            is also the earliest point at which anyone outside the team can react to something
+            real.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Key steps for maximizing AI/ML value</h2></div>
+        <div class="steps-list">
+          <div class="stepitem"><div class="idx">01</div><div>
+            <h4>Clearly defined business problem</h4>
+            <p>Invest the time upfront. Poorly framed problems are a leading cause of failure, and
+               they surface as unmet expectations long after the budget is committed.</p></div></div>
+          <div class="stepitem"><div class="idx">02</div><div>
+            <h4>Data acquisition</h4>
+            <p>Gather and validate the data that supports the problem. It has to be relevant,
+               reliable and representative of the domain — established before the work starts, not
+               discovered during it.</p></div></div>
+          <div class="stepitem"><div class="idx">03</div><div>
+            <h4>Solution design</h4>
+            <p>Design toward the end goal: scalable, measurable, and matched to the resources
+               available. Build for something that will change, and cut waste during
+               development.</p></div></div>
+          <div class="stepitem"><div class="idx">04</div><div>
+            <h4>Success metrics</h4>
+            <p>Set success criteria at every stage, not only at the end. Measurable goals are what
+               let you track progress and manage expectations while the work is still in
+               flight.</p></div></div>
+          <div class="stepitem"><div class="idx">05</div><div>
+            <h4>Accuracy and feasibility</h4>
+            <p>Set realistic accuracy expectations: perfection is not achievable. Measure against
+               real-world benchmarks, and prefer a feasible solution to a theoretically better
+               one.</p></div></div>
+          <div class="stepitem"><div class="idx">06</div><div>
+            <h4>Feasibility and resource planning</h4>
+            <p>Re-assess feasibility at each stage and plan resources accordingly. The project
+               succeeds or fails on having the right people, tools and budget at the right
+               time.</p></div></div>
+          <div class="stepitem"><div class="idx">07</div><div>
+            <h4>Scalability</h4>
+            <p>Make sure the solution handles the volume and complexity of real operations. Evaluate
+               input types, processing needs and running cost before scale becomes the
+               problem.</p></div></div>
+          <div class="stepitem"><div class="idx">08</div><div>
+            <h4>Output delivery</h4>
+            <p>Outputs have to reach the business and be integrated into how it works. Plan how
+               results are presented, so the people who make decisions can act on them.</p></div></div>
+          <div class="stepitem"><div class="idx">09</div><div>
+            <h4>Maintenance and incremental improvement</h4>
+            <p>These systems need maintenance. Design continuous feedback in from the start, so the
+               solution improves on new data instead of drifting away from it.</p></div></div>
+          <div class="stepitem"><div class="idx">10</div><div>
+            <h4>Prototype and implementation</h4>
+            <p>Develop incrementally: prototype first, then build toward the full solution. Iteration
+               is what refines the result and keeps risk contained.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Conclusion</h3>
+          <p>Getting value out of AI and machine learning takes planning, clear objectives, and a
+            structured route from problem to production. The sequence is the point: define the
+            problem, establish the data, build the process, prove it small, then scale.</p>
+          <p>None of this is exotic. It is the unglamorous work that decides whether an investment
+            returns anything — and it is the work most often skipped.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>This is the method we work by.</h2>
+          <p>The Approach page sets out how these principles run as a delivery sequence on real
+             engagements.</p>
+        </div>
+        <button type="button" class="btn" data-goto="approach">See the method</button>
+      </div>
+    </div>
+  </div>
   <!-- ==================== ABOUT ==================== -->
   <div class="view" id="view-about" role="tabpanel">
     <header class="lead">
@@ -1408,14 +1633,14 @@
           2605 Dupree Circle, Austin TX 78748
         </span>
         <span class="icon-actions">
-          <a class="icon-btn" href="tel:***REMOVED-PHONE***" data-tip="Call us"
-             aria-label="Call Riverton and Associates">
+          <button type="button" class="icon-btn" data-tel data-tip="Call us"
+                  aria-label="Call Riverton and Associates">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg>
-          </a>
-          <a class="icon-btn" href="mailto:***REMOVED-EMAIL***" data-tip="Email us"
-             aria-label="Email Riverton and Associates">
+          </button>
+          <button type="button" class="icon-btn" data-mail="short" data-tip="Email us"
+                  aria-label="Email Riverton and Associates">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg>
-          </a>
+          </button>
           <button type="button" class="icon-btn js-chat-open" data-tip="Chat with Rivet"
                   aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
@@ -1496,11 +1721,33 @@
    nothing a visitor writes is ever silently dropped.
    ==================================================================== */
 var CAPTURE_ENDPOINT = '';
-var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
+
+/* ====================================================================
+   CONTACT DETAILS -- kept in pieces on purpose.
+   Neither the address nor the number appears anywhere in the served HTML,
+   and nothing writes them into the DOM either: no href is ever set. The
+   pieces are joined inside a click handler, at which point the browser
+   navigates straight to the mailto: or tel: URL.
+
+   That defeats both tiers of harvester -- the cheap ones that regex the
+   HTML source, and the ones that render the page and dump the resulting
+   DOM. The cost is that with JavaScript off these controls do nothing;
+   that is the trade this technique makes.
+
+   If you edit these, keep them split. Writing the address back as one
+   literal undoes the whole thing.
+   ==================================================================== */
+var MAIL_USER = 'barrington';
+var MAIL_HOST = ['riverton-assoc', 'com'].join('.');
+var TEL_PARTS = ['+1', '210', '602', '9320'];
+
+function contactAddress() { return MAIL_USER + String.fromCharCode(64) + MAIL_HOST; }
+function contactTel()     { return TEL_PARTS.join(''); }
 
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var VIEWS = ['home','capabilities','approach','platform','bastionx','securetsi','blog','about'];
+  var VIEWS = ['home','capabilities','approach','platform','bastionx','securetsi','blog',
+               'whitepaper','about'];
   var PARTNER_VIEWS = ['platform','bastionx','securetsi'];
 
   /* ---------- tab routing ---------- */
@@ -1508,6 +1755,7 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
   var partnersTab  = document.getElementById('partners-tab'),
       partnersMenu = document.getElementById('partners-menu'),
       ddItems      = Array.prototype.slice.call(document.querySelectorAll('.dd-item'));
+  var currentView = 'home';
   function show(name, push) {
     if (VIEWS.indexOf(name) < 0) name = 'home';
     VIEWS.forEach(function (v) {
@@ -1523,9 +1771,49 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
       });
     }
     if (push && location.hash !== '#' + name) history.pushState(null, '', '#' + name);
+    currentView = name;
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   }
   tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view, true); }); });
+
+  /* ---------- contact controls ----------
+     These are buttons, not links, and they carry no href: the address and the
+     number are assembled from their parts inside the click handler and handed
+     straight to the browser, so neither ever exists in the markup or in the
+     live DOM. See the CONTACT DETAILS note above.
+
+     The mail body carries a subject naming the section and the page the
+     visitor was reading, plus -- on the primary calls to action -- a short set
+     of prompts, so the details we need arrive with the first mail rather than
+     after a round trip. currentView is tracked rather than read from the hash
+     because show() navigates with pushState, which fires no hashchange. */
+  var SECTION_NAME = {
+    home: 'Home', capabilities: 'Capabilities', approach: 'Approach',
+    platform: 'CXO Nexus platform', bastionx: 'BastionX',
+    securetsi: 'Secure Tech Solutions', blog: 'Blog', whitepaper: 'White paper',
+    about: 'About us'
+  };
+  var MAIL_PROMPTS = ['Name:', 'Company:', 'Role:', 'Email:', 'Phone (optional):', '',
+                      'What you would like help with:', '', ''];
+
+  function mailHref(kind) {
+    var section = SECTION_NAME[currentView] || 'Home';
+    /* CRLF, not a bare LF — Outlook drops bare newlines out of a mailto body. */
+    var body = (kind === 'conversation' ? MAIL_PROMPTS.slice() : [''])
+      .concat(['', '—', 'Sent from the Riverton website',
+               'Section: ' + section, 'Page: ' + location.href]);
+    return 'mailto:' + contactAddress() +
+           '?subject=' + encodeURIComponent('Riverton website — enquiry (' + section + ')') +
+           '&body='    + encodeURIComponent(body.join('\r\n'));
+  }
+
+  document.querySelectorAll('[data-mail]').forEach(function (b) {
+    b.addEventListener('click', function () { window.location.href = mailHref(b.dataset.mail); });
+  });
+  document.querySelectorAll('[data-tel]').forEach(function (b) {
+    b.addEventListener('click', function () { window.location.href = 'tel:' + contactTel(); });
+  });
+
   document.querySelectorAll('[data-goto]').forEach(function (b) {
     b.addEventListener('click', function () { show(b.dataset.goto, true); });
   });
@@ -1686,7 +1974,7 @@ var CAPTURE_MAILTO   = '***REMOVED-EMAIL***';
     var body = 'Message left via the Rivet chat on the Riverton website:\n\n' + transcript() +
                (visitorEmail ? '\n\nReply to: ' + visitorEmail : '') +
                '\n\nPage: ' + location.href;
-    return 'mailto:' + CAPTURE_MAILTO +
+    return 'mailto:' + contactAddress() +
            '?subject=' + encodeURIComponent('Riverton website — chat enquiry') +
            '&body=' + encodeURIComponent(body);
   }
