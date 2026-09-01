@@ -30,6 +30,45 @@ GitHub Pages, S3. Any of those will serve this folder as-is.
 A single page with hash-routed tabs: `#home`, `#about`, `#capabilities`, `#approach`,
 `#blog`, `#platform`. Each is linkable and the browser back button works.
 
+## White papers
+
+Each paper exists in three forms, from one source:
+
+    white-paper/<name>.md        the text, in git, diffable
+    index.html  #<view-id>       the published page — the entry point, indexed, mobile
+    white-paper/pdf/<name>.pdf   the download — what a reader forwards or prints
+
+The page and the PDF are the *same markup*: the PDF is produced by printing the
+view, so the two cannot drift. The two-column layout lives in the `@media print`
+block in `index.html` and applies only to the PDF — a printed page is a fixed
+frame, so columns work there, whereas on a scrolling page they would mean
+scrolling back up once per column.
+
+Each paper page carries a **Download PDF** link in its byline. Readers stay on
+the page; anyone who wants to print, forward or file it takes the PDF. The `.md`
+is never served — a browser does not render markdown, it would download the file
+or show raw `#` and `**`.
+
+Ctrl-P on a paper page produces the same two-column document as the PDF, because
+both come from the same print stylesheet.
+
+To regenerate every PDF after editing a paper:
+
+    bash white-paper/make-pdfs.sh
+
+The script reports FAILED rather than silently leaving a stale file in place —
+the usual cause is having the PDF open in a viewer, which locks it.
+
+**When deploying, `white-paper/pdf/` must be uploaded** or the download links
+404. The `.md` files and the script are source; they can be omitted from the
+web root, though they do no harm there.
+
+Publishing a new paper is three steps: add the `.md`, add a `<div class="view">`
+for it, and add one entry to `PAPERS` near the foot of `index.html`. The blog
+grid, the featured panel, the ordering and the search all follow from that entry.
+The blog shows the newest paper in the featured panel and the next six in the
+grid; past seven, the grid starts scrolling and a search box appears on its own.
+
 ## Before going live
 
 - Replace the sample Blog entries with real posts (they are labelled as placeholders).
