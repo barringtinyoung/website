@@ -490,6 +490,38 @@
   /* A patient chart on a clipboard: held closed, the page lifts to be read, then
      drops back. Returns handles so the animation can drive the states without a
      timer of its own. */
+  /* The sign-off inspector. Drawn deliberately larger than the badge glyphs:
+     the hero renders this diagram at about 0.78 scale, so a figure sized to
+     match the chips would be 14px on screen and its gait would read as a
+     wobble rather than as walking. */
+  function drawWalker(g, col) {
+    var k = g.append('g');
+    k.append('circle').attr('cy', -9).attr('r', 3.6)
+      .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.5);
+    k.append('path').attr('d', 'M0,-5.4 V3')
+      .style('fill', 'none').style('stroke', col).style('stroke-width', 1.7);
+    var legs = k.append('path').style('fill', 'none').style('stroke', col)
+      .style('stroke-width', 1.7).style('stroke-linecap', 'round');
+    var arm = k.append('path').style('fill', 'none').style('stroke', col)
+      .style('stroke-width', 1.5).style('stroke-linecap', 'round');
+    /* the chart goes with them — that is the whole point of the round */
+    var board = k.append('g').attr('transform', 'translate(6.4,-1)');
+    board.append('rect').attr('x', -3).attr('y', -5).attr('width', 6.6).attr('height', 9).attr('rx', 1)
+      .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.2);
+    board.append('rect').attr('x', -1.4).attr('y', -6.3).attr('width', 3).attr('height', 2.2).attr('rx', .8)
+      .style('fill', col);
+
+    return {
+      /* ph 0..1 drives the gait; facing +1 right, -1 left. */
+      set: function (ph, facing) {
+        var sw = Math.sin(ph * Math.PI * 2) * 3.4;
+        legs.attr('d', 'M0,3 l' + (-sw) + ',8 M0,3 l' + sw + ',8');
+        arm.attr('d', 'M0,-3.4 l' + (sw * 0.55) + ',5');
+        k.attr('transform', facing < 0 ? 'scale(-1,1)' : null);
+      }
+    };
+  }
+
   function drawChart(g, col) {
     var closed = g.append('g');
     closed.append('rect').attr('x', -9).attr('y', -11).attr('width', 18).attr('height', 23).attr('rx', 2)
@@ -730,7 +762,10 @@
     var lastY  = stageY[stageY.length - 1];
     var fanTop = lastY + R;
 
-    var Y1 = lastY + 74, Y2 = Y1 + 66, YC = Y2 + 46;
+    /* YC was Y2 + 46, which left only 18px under the taxonomy chips — too
+       narrow for the inspector to walk beneath them. 70 gives a 42px corridor,
+       matching the one above, at the cost of 24px of diagram height. */
+    var Y1 = lastY + 74, Y2 = Y1 + 66, YC = Y2 + 70;
     var YG = YC + 50;                               /* 09b sign-off gate */
     var YP = YG + 66, YU = YP + 62;
     var CH = YU + 56;
@@ -823,7 +858,8 @@
     var gBack = svg.append('g'),   /* solid fills (the building)      */
         gRail = svg.append('g'),   /* connector lines                 */
         gFlow = svg.append('g'),   /* travelling packets              */
-        gNode = svg.append('g');   /* badges, circles, chips, text    */
+        gNode = svg.append('g'),   /* badges, circles, chips, text    */
+        gWalk = svg.append('g');   /* the sign-off inspector, over all */
 
     /* A stage may sit off the rail (dx), which turns its connectors into
        diagonals — used so the edge into spend classification is visible. */
@@ -1168,14 +1204,106 @@
       HAS_PACER = true;
       var announced = false;
 
-      var prog = 0, last = 0;
+      /* ---- 09b: the inspection round -------------------------------------
+         The inspector leaves the gate carrying the chart and walks the review
+         lab, inspecting every chip from underneath. That takes two lanes: they
+         drop from LANE_A to LANE_B after OEM to pass under the taxonomies, and
+         climb back to LANE_A for Contract. Then they retrace the whole path
+         home — same route, no stops, at pace.
+
+         They do not retrace: the return follows the rail the record itself
+         takes — down Contract's drop line to the collector bus, along the bus,
+         and down into the gate. BACK_Y puts their feet on the bus rather than
+         their waist, which is why it is offset by the glyph's foot height.
+
+         Stops carry their own lane, so reordering the round, moving a chip to
+         the other lane, or adding the Classification chip, is a one-line change
+         to TOUR_STOPS. */
+      var LANE_A = (Y1 + CHIP_H + Y2) / 2;   /* between the branch row and the taxonomies */
+      var LANE_B = (Y2 + CHIP_H + YC) / 2;   /* between the taxonomies and the bus */
+      var TOUR_STOPS = [
+        { c: B[0], y: LANE_A },   /* Supplier   — inspected from below */
+        { c: B[1], y: LANE_A },   /* OEM        */
+        { c: O[0], y: LANE_B },   /* Taxonomy 1 — dropped a lane, still from below */
+        { c: O[1], y: LANE_B },   /* Taxonomy 2 */
+        { c: O[2], y: LANE_B },   /* Taxonomy n */
+        { c: B[3], y: LANE_A }    /* Contract   — back up a lane */
+      ];
+      var OUT_SPEED = 150, BACK_SPEED = 320, DWELL = 0.35;
+
+      var walk = (function () {
+        var g = gWalk.append('g').style('opacity', 0);
+        var fig = drawWalker(g, C.integ);
+        var home = { x: RAIL, y: YG - RG - 7 };
+        var pts = [home].concat(TOUR_STOPS.map(function (t) {
+          return { x: t.c.cx, y: t.y };
+        }));
+        var segs = [];
+        function leg(a, b, sp) {
+          var d = Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+          segs.push({ a: a, b: b, dur: Math.max(0.001, d / sp), stop: false });
+        }
+        /* out, pausing at each chip */
+        for (var i = 1; i < pts.length; i++) {
+          leg(pts[i - 1], pts[i], OUT_SPEED);
+          segs.push({ a: pts[i], b: pts[i], dur: DWELL, stop: true });
+        }
+        /* home along the rail the record takes: down Contract's drop line to
+           the collector bus, west along the bus, then down into the gate. */
+        var FOOT = 11;                        /* drawWalker's feet, below origin */
+        var BACK_Y = YC - FOOT;               /* so they walk ON the bus, not through it */
+        var last = pts[pts.length - 1];
+        leg(last, { x: last.x, y: BACK_Y }, BACK_SPEED);
+        leg({ x: last.x, y: BACK_Y }, { x: home.x, y: BACK_Y }, BACK_SPEED);
+        leg({ x: home.x, y: BACK_Y }, home, BACK_SPEED);
+
+        var total = segs.reduce(function (m, sg) { return m + sg.dur; }, 0);
+        var n = TOUR_STOPS.length;
+
+        return {
+          total: total,
+          /* Returns how much of the round is done, which drives the chart. */
+          at: function (t) {
+            if (t <= 0 || t >= total) { g.style('opacity', 0); return t >= total ? 1 : 0; }
+            g.style('opacity', 1);
+            var acc = 0, i = 0, visited = 0;
+            for (; i < segs.length - 1; i++) {
+              if (acc + segs[i].dur > t) break;
+              acc += segs[i].dur;
+              if (segs[i].stop) visited++;
+            }
+            var sg = segs[i], u = (t - acc) / sg.dur;
+            g.attr('transform', 'translate(' + (sg.a.x + (sg.b.x - sg.a.x) * u) + ',' +
+                                              (sg.a.y + (sg.b.y - sg.a.y) * u) + ')');
+            var dx = sg.b.x - sg.a.x;
+            if (dx === 0 && i > 0) dx = segs[i - 1].b.x - segs[i - 1].a.x;
+            /* gait runs off elapsed time, and stands still during a dwell */
+            fig.set(sg.stop ? 0 : (t * 2.4) % 1, dx >= 0 ? 1 : -1);
+            return visited / n;
+          }
+        };
+      })();
+      var TOUR_T = walk.total;
+
+      var prog = 0, last = 0, tourT = 0;
       d3.timer(function (el) {
         var dt = Math.min(60, el - last) / 1000; last = el;
-        prog += SPEED * dt;
+
+        /* The round holds the pipeline at the gate: prog stops advancing while
+           the inspector walks, then releases. Route milestones are untouched,
+           so all fourteen paths stay in step through the pause. */
+        if (tourT < TOUR_T && prog + SPEED * dt > GATE_PH) {
+          prog = GATE_PH;
+          tourT = Math.min(TOUR_T, tourT + dt);
+        } else {
+          prog += SPEED * dt;
+        }
+
         if (prog > PH + (rework ? REWORK_HOLD : HOLD)) {
           if (rework) { rework = false; prog = REVIEW_PH; }
           else { cycle++; pickVerdict(); prog = 0; }
           announced = false;
+          tourT = 0;                      /* a sent-back record is re-inspected */
         }
         if (!rework && !announced && prog >= PH) { announced = true; announceArrival(); }
 
@@ -1183,16 +1311,20 @@
         var f = Math.min(1, prog - k);
         var onTail = k >= PH - 1;
 
+        /* The chart lifts as they set off, fills a line per stop, and the
+           verdict lands once they are back at the gate. */
         var gp = prog - GATE_PH;
+        var visited = walk.at(tourT);
         var lift = 0, read = 0;
-        if (gp > 0 && gp < 1) {
-          lift = gp < 0.25 ? gp / 0.25 : (gp > 0.8 ? Math.max(0, (1 - gp) / 0.2) : 1);
-          read = gp < 0.25 ? 0 : Math.min(1, (gp - 0.25) / 0.55);
+        if (tourT > 0) {
+          lift = tourT < TOUR_T ? Math.min(1, tourT / 0.3)
+                                : (gp > 0.8 ? Math.max(0, (1 - gp) / 0.2) : 1);
+          read = visited;
         }
         chart.set(lift, read);
 
-        var showStamp = prog > GATE_PH + 0.78;
-        stamp.style('opacity', showStamp ? Math.min(1, (prog - GATE_PH - 0.78) / 0.18) : 0);
+        var showStamp = tourT >= TOUR_T && gp > 0.04;
+        stamp.style('opacity', showStamp ? Math.min(1, (gp - 0.04) / 0.18) : 0);
         if (showStamp) {
           stampBox.style('stroke', rework ? C.rework : C.integ);
           stampTxt.style('fill', rework ? C.rework : C.integ)

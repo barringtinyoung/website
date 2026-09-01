@@ -165,6 +165,45 @@ picked up, read, and stamped:
 Nothing reaches packaging without passing this gate. Rejected work does not go back to the
 start — it re-enters at the review lab and carries on from there.
 
+**The inspection round.** The verdict is not instant: an inspector leaves the gate carrying
+the chart and walks the review lab before deciding.
+
+    Sign-off → Supplier → OEM → Taxonomy₁ → Taxonomy₂ → Taxonomyₙ → Contract → Sign-off
+
+Every chip is inspected **from underneath**, which takes two lanes:
+
+- `LANE_A`, between the branch row and the taxonomy row — Supplier, OEM, Contract
+- `LANE_B`, between the taxonomy row and the collector bus — the three taxonomies
+
+They drop from A to B after OEM and climb back to A for Contract. `LANE_B` did not exist
+until this was built: `YC` was `Y2 + 46`, leaving only 18px under the taxonomy chips, which
+is narrower than the figure. It is now `Y2 + 70`, giving a 42px corridor to match the one
+above, **at the cost of 24px of diagram height**.
+
+The return does **not** retrace. They come home along the rail the record itself takes:
+down Contract's drop line to the collector bus, west along the bus, then down into the
+gate — at roughly double pace, since nothing happens on the way back. `BACK_Y` is offset
+by the glyph's foot height so they walk **on** the bus rather than through it.
+
+The chart tracks the round — it lifts as they set off, and fills one line per stop — and
+the verdict stamps about 160 ms after they are back. A rejected record is walked again on
+its retry pass.
+
+| Edit | Where |
+|---|---|
+| Which chips are visited, and in what order | `TOUR_STOPS` in `renderCompact` |
+| Walking pace, return pace, pause at each stop | `OUT_SPEED`, `BACK_SPEED`, `DWELL` |
+| The two corridors | `LANE_A`, `LANE_B` (and `YC`, which sets how deep `LANE_B` is) |
+| The figure itself | `drawWalker` |
+
+> The Classification chip is **passed under but not visited** — the taxonomies below it are
+> its result, so stopping at both would be saying the same thing twice. Adding it is one
+> entry in `TOUR_STOPS`.
+
+> The figure is drawn **deliberately out of scale** with the badges. The hero renders this
+> diagram at about 0.78, so a figure sized to match the chips would be 14px on screen and
+> its gait would read as a wobble. It is about 24 units tall instead.
+
 ### 10 — Packaging
 
 Each of supplier, OEM, classification and contract, and their output, is taken from the
@@ -360,6 +399,7 @@ The packet count tells the story:
 | Into sign-off | converge | everything gathers at the gate to be read |
 | After sign-off | 1 path of 2 | approved → publish → customer, or needs updates → back to validation |
 | After a rejection | resumes | the packets set off down again **from validation**, not from intake |
+| At the gate | held | the packets stop while the inspector walks the round, then resume |
 
 Two mechanisms make this work, and both matter if the diagram is edited:
 
@@ -369,6 +409,14 @@ Two mechanisms make this work, and both matter if the diagram is edited:
   route, or they will drift apart.
 - **Duplicate hiding.** Tokens sitting at the same point are hidden, so the packet reads
   as one object until it genuinely divides.
+- **The gate hold.** The inspection round does not run on its own clock beside the
+  pipeline — it stops it. When `prog` reaches `GATE_PH` it is pinned there while `tourT`
+  advances, then released. Route milestones are never touched, so all fourteen paths stay
+  in step through the pause.
+
+  This costs real time: a lap was **14.85 s** and is now **23.6 s** — the round itself is
+  8.7 s. That is the price of it, and it lands on the access diagram too — see below.
+
 - **The handoff between the two diagrams.** The access diagram does not run on its own
   clock. Its packet parks on the customer and stays there until the pipeline's packet
   reaches **12 Customer**, and only then sets off among the roles — the right-hand panel
@@ -381,16 +429,19 @@ Two mechanisms make this work, and both matter if the diagram is edited:
   parked — which is why the pause before a retry is visibly longer.
 
   Idle is not blank: the packet sits on the customer at full opacity, so a panel waiting
-  out a fourteen-second lap reads as waiting rather than as broken.
+  out a lap reads as waiting rather than as broken. Since the inspection round was added
+  that wait is roughly **16 s** of a 23 s lap — worth remembering if the round gets longer
+  still.
 
   If no compact variant is on the page (the refinement harness, or a page embedding only
   the access diagram) nothing ever announces, so `HAS_PACER` stays false and the access
   variant free-runs instead of freezing. Both timers first tick after all synchronous
   render calls, so render order does not matter.
 
-- **Layer order.** The SVG has four layers, and the order is load-bearing:
+- **Layer order.** The SVG has five layers, and the order is load-bearing:
   `gBack` (solid fills) → `gRail` (lines) → `gFlow` (packets) → `gNode` (badges, circles,
-  chips, text). Anything with a solid fill drawn above `gFlow` will hide packets passing
+  chips, text) → `gWalk` (the sign-off inspector). The inspector is last because the round
+  takes them across chips whose fills would otherwise hide them. Anything with a solid fill drawn above `gFlow` will hide packets passing
   behind it — that is what made the packets vanish inside the specialists building. Put
   new fills in `gBack`; put new labels in `gNode`, where a packet slipping behind a badge
   or a circle reads as entering it.
