@@ -137,11 +137,21 @@ The integrated and classified data is taken from the recovery room and broken in
 3. **Classification** — classification check
 4. **Contract** — contract check
 
-The classification branch splits into three:
+The classification branch splits into the customer's taxonomies:
 
-- TBM
-- Level 1
-- Non-Tech
+- Taxonomy₁
+- Taxonomy₂
+- …
+- Taxonomyₙ
+
+These are **deliberately not named**. TBM, Level 1 and Non-Tech were the original
+labels, and they meant nothing to a website reader — the useful claim is not which
+taxonomies a particular customer has, but that any number of them can be produced from
+the one classified record. The subscripts and the ellipsis carry that: 1 to n, for some n.
+
+Three chips are drawn because three is enough to establish a series without crowding the
+row — it is not a claim that there are three. If the count changes, the ellipsis position
+moves with `CLASS_GAP_AFTER`.
 
 ### 9b — Sign-off
 
@@ -217,7 +227,7 @@ the badges, steps 2–4 are drawn as a single stage.
 | 07 Spend classification | 8.4, on the unified record |
 | **07b Other processing** | 8d — contracts and business hierarchy, which skip classification |
 | 08 Ready for review | 8.5 — the recovery room |
-| 09 Validation | 9 — the review lab; fanning to Supplier / OEM / Classification / Contract; classification splits to TBM / Level 1 / Non-Tech |
+| 09 Validation | 9 — the review lab; fanning to Supplier / OEM / Classification / Contract; classification splits to Taxonomy₁ / Taxonomy₂ / … / Taxonomyₙ |
 | **09b Sign-off** | 9b — the chart is read, then stamped approved or needs updates |
 | 10 Publish | 10, 10.1, 10.2 — packaging |
 | 11 Continuous learning (gutter) | 11.1–11.4, dashed returns landing on the specific specialist circle |
@@ -346,7 +356,7 @@ The packet count tells the story:
 | Match & merge → Ready for review | **2** | most work is classified; contracts and business hierarchy take other processing |
 | Ready for review → Validation | **1** | both paths rejoin |
 | Validation → branches | **4** | supplier, OEM, classification, contract |
-| After classification splits | **6** | TBM, Level 1, Non-Tech join supplier, OEM and contract |
+| After classification splits | **6** | the three taxonomy chips join supplier, OEM and contract |
 | Into sign-off | converge | everything gathers at the gate to be read |
 | After sign-off | 1 path of 2 | approved → publish → customer, or needs updates → back to validation |
 | After a rejection | resumes | the packets set off down again **from validation**, not from intake |
