@@ -163,9 +163,11 @@
       title: 'Classification check', tag: '9c',
       steps: ['Does the classification stand up on all three axes?'] },
 
-    { id: 'tbm',     kind: 'chip', lane: 'review', x: 840,  dy: 126, w: 104, h: 38, accent: C.classed, title: 'TBM' },
-    { id: 'lvl1',    kind: 'chip', lane: 'review', x: 956,  dy: 126, w: 104, h: 38, accent: C.classed, title: 'Level 1' },
-    { id: 'nontech', kind: 'chip', lane: 'review', x: 1072, dy: 126, w: 108, h: 38, accent: C.classed, title: 'Non-Tech' }
+    /* Named to match the compact variant's CLASS_OUTPUTS. This renderer has no
+       subscript support, so they read as plain text until it catches up. */
+    { id: 'tax1',    kind: 'chip', lane: 'review', x: 840,  dy: 126, w: 104, h: 38, accent: C.classed, title: 'Taxonomy 1' },
+    { id: 'tax2',    kind: 'chip', lane: 'review', x: 956,  dy: 126, w: 104, h: 38, accent: C.classed, title: 'Taxonomy 2' },
+    { id: 'taxn',    kind: 'chip', lane: 'review', x: 1072, dy: 126, w: 108, h: 38, accent: C.classed, title: 'Taxonomy n' }
   ];
 
   /* Links. `from`/`to` are room ids, or synthetic ids produced by the intake
@@ -203,9 +205,9 @@
     { from: 'recovery', to: 'chkOem',      kind: 'integ' },
     { from: 'recovery', to: 'chkClass',    kind: 'integ' },
 
-    { from: 'chkClass', to: 'tbm',     kind: 'classed', side: 'short' },
-    { from: 'chkClass', to: 'lvl1',    kind: 'classed', side: 'short' },
-    { from: 'chkClass', to: 'nontech', kind: 'classed', side: 'short' }
+    { from: 'chkClass', to: 'tax1',    kind: 'classed', side: 'short' },
+    { from: 'chkClass', to: 'tax2',    kind: 'classed', side: 'short' },
+    { from: 'chkClass', to: 'taxn',    kind: 'classed', side: 'short' }
   ];
 
   /* Intake rows are generated rather than hand-placed. */
@@ -334,7 +336,17 @@
     { id: 'cls', t: 'Classification', c: 'classed' },
     { id: 'con', t: 'Contract',       c: 'org' }
   ];
-  var CLASS_OUTPUTS = ['TBM', 'Level 1', 'Non-Tech'];
+  /* The classification branch fans out into the customer's own taxonomies.
+     Numbered rather than named: a website reader has no idea what TBM or
+     Non-Tech mean, and the useful claim is not which taxonomies exist but that
+     any number of them can be produced. The ellipsis after CLASS_GAP_AFTER is
+     what carries "1 to n" rather than "exactly three". */
+  var CLASS_OUTPUTS = [
+    { t: 'Taxonomy', sub: '1' },
+    { t: 'Taxonomy', sub: '2' },
+    { t: 'Taxonomy', sub: 'n' }
+  ];
+  var CLASS_GAP_AFTER = 1;      /* the ellipsis sits after this chip index */
 
   /* Everything the review lab produces is packaged, then seen by the customer. */
   var TAIL = [
@@ -735,20 +747,43 @@
     var midB = (ySpec + BOX_H + yImm) / 2;
 
     /* ---- review branches and classification outputs ----------------------- */
-    /* The three non-classification branches drop straight past the classification
-       outputs on their way to the collector, so the row is spaced wide enough for
-       each drop to clear those chips rather than disappear behind them. */
-    var REVIEW_GAP = 36;
-    var bx = TX, B = REVIEW_BRANCHES.map(function (r) {
-      var w = chipW(r.t), e = { t: r.t, c: r.c, x: bx, w: w, cx: bx + w / 2 };
-      bx += w + REVIEW_GAP; return e;
+    /* The non-classification branches drop straight past the classification
+       outputs on their way to the collector, so the branch row has to be wide
+       enough for each drop to clear those chips rather than vanish behind them.
+
+       The gap is DERIVED, not fixed. It was 36, tuned when the outputs were
+       TBM / Level 1 / Non-Tech; the taxonomy chips are wider, and 36 put the OEM
+       and Contract drops behind Taxonomy₁ and Taxonomyₙ. Sizing the output row
+       first and solving for the gap keeps the drops clear whatever the outputs
+       are called, and however many there are. */
+
+    /* Subscripts are narrower than the digits chipW assumes, so the chips come
+       out slightly generous — which is what we want, they are the widest row. */
+    var OGAP = 8, ELL = 22;        /* gap between chips, and the wider elided gap */
+    var ows = CLASS_OUTPUTS.map(function (o) { return chipW(o.t + o.sub); });
+    var oTot = ows.reduce(function (m, v) { return m + v; }, 0) +
+               (ows.length - 1) * OGAP + ELL;
+
+    var CLASS_AT = 2;              /* the branch the outputs hang from */
+    var DROP_CLEAR = 16;           /* daylight between a drop and the nearest chip edge */
+    var bws = REVIEW_BRANCHES.map(function (r) { return chipW(r.t); });
+    /* Half the output row, less half of each neighbouring chip, is how far apart
+       the two flanking branches have to be. Solve both sides, take the worse. */
+    var REVIEW_GAP = Math.max(36, Math.ceil(Math.max(
+      oTot / 2 + DROP_CLEAR - bws[CLASS_AT - 1] / 2 - bws[CLASS_AT] / 2,
+      oTot / 2 + DROP_CLEAR - bws[CLASS_AT] / 2 - bws[CLASS_AT + 1] / 2)));
+
+    var bx = TX, B = REVIEW_BRANCHES.map(function (r, k) {
+      var e = { t: r.t, c: r.c, x: bx, w: bws[k], cx: bx + bws[k] / 2 };
+      bx += bws[k] + REVIEW_GAP; return e;
     });
-    var ows = CLASS_OUTPUTS.map(chipW);
-    var oTot = ows.reduce(function (m, v) { return m + v; }, 0) + (ows.length - 1) * 8;
-    var ox = B[2].cx - oTot / 2;   /* under the classification branch */
-    var O = CLASS_OUTPUTS.map(function (t, k) {
-      var e = { t: t, x: ox, w: ows[k], cx: ox + ows[k] / 2 };
-      ox += ows[k] + 8; return e;
+    var ox = B[CLASS_AT].cx - oTot / 2;   /* centred under the classification branch */
+    var ellX = 0;
+    var O = CLASS_OUTPUTS.map(function (o, k) {
+      var e = { t: o.t, sub: o.sub, x: ox, w: ows[k], cx: ox + ows[k] / 2 };
+      ox += ows[k] + OGAP;
+      if (k === CLASS_GAP_AFTER) { ellX = ox - OGAP + (OGAP + ELL) / 2; ox += ELL; }
+      return e;
     });
 
     /* ---- extents ----------------------------------------------------------- */
@@ -775,8 +810,8 @@
             'specialists clean, normalize ' +
             'and enrich their own slice, and the work then leaves and is matched and merged back into one record. ' +
             'The unified record is classified, recovered, and checked in the review lab along supplier, ' +
-            'OEM, classification and contract branches, classification splitting into TBM, Level 1 ' +
-            'and Non-Tech. ' +
+            'OEM, classification and contract branches, classification splitting into the ' +
+            'customer taxonomies, taxonomy one through taxonomy n. ' +
             'Sign-off reads the chart and either approves the work to packaging and the customer, or ' +
             'sends it back to the review lab. Findings feed back to the specialists.')
       .style('width', '100%').style('height', 'auto').style('display', 'block')
@@ -904,13 +939,13 @@
     var subTop = Y1 + CHIP_H, subMid = (subTop + Y2) / 2;
     O.forEach(function (e) {
       gRail.append('path')
-        .attr('d', 'M' + B[2].cx + ',' + subTop + ' C' + B[2].cx + ',' + subMid + ' ' +
+        .attr('d', 'M' + B[CLASS_AT].cx + ',' + subTop + ' C' + B[CLASS_AT].cx + ',' + subMid + ' ' +
                    e.cx + ',' + subMid + ' ' + e.cx + ',' + Y2)
         .style('fill', 'none').style('stroke', C.classed).style('stroke-width', 1.2).style('opacity', .6);
     });
 
     /* ---- collector into the sign-off gate ----------------------------------- */
-    var plain = B.filter(function (e, k) { return k !== 2; });          /* all but classification */
+    var plain = B.filter(function (e, k) { return k !== CLASS_AT; });   /* all but classification */
     var feeders = plain.map(function (e) { return e.cx; })
                        .concat(O.map(function (e) { return e.cx; }));
     var fromY = plain.map(function () { return Y1 + CHIP_H; })
@@ -954,11 +989,19 @@
       gNode.append('rect').attr('x', e.x).attr('y', y).attr('width', e.w).attr('height', CHIP_H)
         .attr('rx', CHIP_H / 2)
         .style('fill', C.surface).style('stroke', col).style('stroke-width', 1.2);
-      gNode.append('text').attr('x', e.cx).attr('y', y + 18).attr('text-anchor', 'middle')
-        .style('font-size', (size || 11.5) + 'px').style('fill', col).text(e.t);
+      var fs = size || 11.5;
+      var t = gNode.append('text').attr('x', e.cx).attr('y', y + 18).attr('text-anchor', 'middle')
+        .style('font-size', fs + 'px').style('fill', col);
+      t.append('tspan').text(e.t);
+      /* A real subscript: dy drops the baseline, the smaller size keeps it from
+         reading as part of the word. text-anchor centres the pair together. */
+      if (e.sub) t.append('tspan').attr('dy', 3.4)
+        .style('font-size', (fs * 0.8) + 'px').text(e.sub);
     }
     B.forEach(function (e) { chip(e, Y1, C[e.c]); });
     O.forEach(function (e) { chip(e, Y2, C.classed, 11); });
+    gNode.append('text').attr('x', ellX).attr('y', Y2 + 19).attr('text-anchor', 'middle')
+      .style('font-size', '13px').style('fill', C.faint).text('…');
 
     /* ---- 09b sign-off: the chart is read, then stamped ----------------------- */
     var gate = gNode.append('g').attr('transform', 'translate(' + RAIL + ',' + YG + ')');

@@ -157,8 +157,11 @@
   /* The two hero diagrams, side by side under a full-width lede. The pipeline
      takes the larger share: it is the denser of the two, and extra width makes
      it shorter, which keeps the pair closer to the same height. */
-  .hero-panels { margin-top:2.6rem;
+  .hero-panels { margin-top:1.6rem;
                  grid-template-columns:minmax(0,1.32fr) minmax(0,1fr); }
+  /* The hero's figures sit between the lede and the diagrams, so they need less
+     air than the home page's, which close out a column with nothing after them. */
+  .hero-stats { max-width:82ch; margin-top:1.4rem; padding-top:.9rem; }
   @media (max-width:1100px){ .hero-panels { grid-template-columns:1fr } }
 
   .panel { background:var(--surface); border:1px solid var(--line); }
@@ -892,10 +895,22 @@
       <div class="wrap">
         <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
         <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+        <p class="lede" style="max-width:82ch">CXO Nexus is the industry leader in
+          line-item-level spend analytics.</p>
         <p class="lede" style="max-width:82ch">Riverton &amp; Associates is an implementation
-          partner for the CXO Nexus enterprise spend analytics platform. We deploy it, integrate
-          it with your source systems, design the taxonomy it runs on, and make sure it produces
-          answers your finance and procurement teams will actually defend.</p>
+          partner for the platform. We deploy it, integrate it with your source systems, design the
+          taxonomy it runs on, and make sure it produces answers your finance and procurement teams
+          will actually defend.</p>
+        <!-- The two figures live here rather than in the prose: they are the
+             strongest proof on the page, and the home page already establishes
+             this component as where a number goes. Constrained to the lede's
+             measure so the rule lines up with the text above it. -->
+        <div class="stats hero-stats">
+          <div class="stat"><div class="k">$1T+</div>
+            <div class="l">Of spend processed by the platform to date</div></div>
+          <div class="stat"><div class="k">$4B</div>
+            <div class="l">Of new spend taken in every month</div></div>
+        </div>
       </div>
 
       <div class="wrap split hero-panels">
