@@ -141,6 +141,15 @@
   .lead h1 .hl { color:var(--accent); font-style:italic; }
   .lead .lede { margin:1.2rem 0 0; max-width:var(--measure); font-size:1.05rem; color:var(--muted); }
   .lead .lede + .lede { margin-top:.85rem; }
+  /* A hero that opens on a claim rather than a description: the first lede is
+     set larger and in ink so it carries, with the two load-bearing phrases in
+     accent. Must follow `.lead .lede` — equal specificity, so source order is
+     what lets it win. The h1's accent is italic serif, so accent sans at 600
+     reads as a different register rather than competing with it. */
+  .lead .lede.kicker { font-size:1.24rem; line-height:1.45; color:var(--ink);
+                       letter-spacing:-.006em; }
+  .lead .lede.kicker strong { font-weight:600; color:var(--accent); }
+  .lead .lede.kicker + .lede { margin-top:1rem; }
 
   section { padding:clamp(2.6rem,6vw,4.6rem) 0; border-top:1px solid var(--line); }
   .sec-head { display:flex; align-items:baseline; gap:1rem; margin-bottom:.85rem; }
@@ -895,21 +904,25 @@
       <div class="wrap">
         <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
         <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
-        <p class="lede" style="max-width:82ch">CXO Nexus is the industry leader in
-          line-item-level spend analytics.</p>
+        <p class="lede kicker" style="max-width:82ch">CXO Nexus is the industry leader in
+          <strong>line-item-level spend analytics</strong>, with <strong>nearly a decade in the
+          field</strong>.</p>
         <p class="lede" style="max-width:82ch">Riverton &amp; Associates is an implementation
           partner for the platform. We deploy it, integrate it with your source systems, design the
           taxonomy it runs on, and make sure it produces answers your finance and procurement teams
           will actually defend.</p>
-        <!-- The two figures live here rather than in the prose: they are the
-             strongest proof on the page, and the home page already establishes
-             this component as where a number goes. Constrained to the lede's
-             measure so the rule lines up with the text above it. -->
+        <!-- The figures live here rather than in the prose: they are the strongest
+             proof on the page, and the home page already establishes this component
+             as where a number goes. Hard quantities only — tenure reads as words in
+             the lede above, because "nearly a decade" is a different kind of claim
+             and sat awkwardly among the money and counts. -->
         <div class="stats hero-stats">
           <div class="stat"><div class="k">$1T+</div>
             <div class="l">Of spend processed by the platform to date</div></div>
           <div class="stat"><div class="k">$4B</div>
             <div class="l">Of new spend taken in every month</div></div>
+          <div class="stat"><div class="k">60+</div>
+            <div class="l">Enterprise deployments across 10+ industries</div></div>
         </div>
       </div>
 
