@@ -427,10 +427,43 @@
   .cell.post p { font-size:.86rem; }
   .cell.post .more { font-family:var(--mono); font-size:.66rem; letter-spacing:.1em;
                      text-transform:uppercase; color:var(--accent); margin-top:auto; padding-top:.6rem; }
+  /* The one card that leads somewhere is a button; the rest are still spans. */
+  .cell.post button.more { background:none; border:0; padding:.6rem 0 0; text-align:left;
+                           cursor:pointer; align-self:flex-start; }
+  .cell.post button.more:hover { color:var(--accent-d); text-decoration:underline; }
   .foot-in .rights { margin-left:auto; font-family:var(--mono); font-size:.69rem; color:var(--faint); }
 
   /* The white paper is the only view that is simply text rather than cards and
      lists, so it gets a reading column of its own. */
+  /* Papers are entered from the blog, so they need a way out. show() also puts
+     the reader back where they were rather than at the top of the list. */
+  .backlink { display:inline-flex; align-items:center; gap:.45rem; background:none; border:0;
+              padding:0 0 1rem; cursor:pointer; font-family:var(--mono); font-size:.68rem;
+              letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
+  .backlink:hover { color:var(--accent); }
+
+  /* Firm and date together, under the deck — the eyebrow says what kind of
+     document it is, the byline says whose it is and when. */
+  .byline { margin:1.1rem 0 0; font-family:var(--mono); font-size:.72rem;
+            letter-spacing:.06em; color:var(--faint); }
+  /* Read on the page, print from the PDF. The link sits in the byline rather
+     than as a button, so it reads as part of the document's identity line. */
+  .pdf-link { color:var(--accent); text-decoration:none;
+              border-bottom:1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+  .pdf-link:hover { border-bottom-color:var(--accent); }
+  /* Closing block. In print the call to action is dropped, so this becomes the
+     last thing on the last page — which is where it belongs in a document that
+     gets forwarded. */
+  .paper-about { max-width:var(--measure); border-top:1px solid var(--line);
+                 padding-top:1.1rem; margin-top:2.4rem; }
+  .paper-about p { margin:0; font-size:.9rem; color:var(--muted); font-style:italic; }
+  .paper-about .who { margin-top:.5rem; font-family:var(--mono); font-size:.72rem;
+                      font-style:normal; letter-spacing:.06em; color:var(--faint); }
+  /* A loose page of a PDF should still say whose it is. Chrome repeats a fixed
+     element on every printed page; @page margin boxes it does not support, which
+     is why there is no page number here. */
+  .print-footer { display:none; }
+
   .paper { max-width:var(--measure); }
   .paper > h3:first-child { margin-top:0; }
   .paper h3 { font-family:var(--serif); font-size:1.3rem; font-weight:600; letter-spacing:-.01em;
@@ -442,6 +475,99 @@
   .paper b { color:var(--ink); font-weight:650; }
   .paper .why { border-left:2px solid var(--line-2); padding-left:.9rem; font-size:.9rem;
                 color:var(--faint); }
+  .paper code { font-family:var(--mono); font-size:.86em; color:var(--ink);
+                background:color-mix(in srgb, var(--ink) 5%, transparent);
+                padding:.08em .32em; border-radius:2px; }
+  /* Tables in a paper sit outside .paper so they can run wider than the
+     reading measure, and scroll on their own below it. */
+  .paper-table { max-width:min(100%, 46rem); margin:0 0 1.5rem; overflow-x:auto; }
+  .paper-table table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  .paper-table th { text-align:left; font-family:var(--mono); font-size:.66rem;
+                    letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+                    font-weight:400; padding:.5rem .9rem .5rem 0; border-bottom:1px solid var(--line-2); }
+  .paper-table td { padding:.5rem .9rem .5rem 0; border-bottom:1px solid var(--line);
+                    color:var(--muted); }
+  .paper-table tr.tot td { border-bottom:none; border-top:1px solid var(--line-2);
+                           color:var(--ink); }
+  .paper-table .cap { margin:.55rem 0 0; font-family:var(--mono); font-size:.7rem;
+                      color:var(--faint); }
+
+  .blog-tools { display:flex; align-items:center; gap:.9rem; margin-bottom:1.2rem; }
+  /* display:flex above beats the UA's [hidden]{display:none}, so say it again. */
+  .blog-tools[hidden] { display:none; }
+  .blog-q { flex:1; max-width:22rem; font:inherit; font-size:.9rem; color:var(--ink);
+            background:var(--surface); border:1px solid var(--line-2); padding:.55rem .8rem; }
+  .blog-q::placeholder { color:var(--faint); }
+  .blog-q:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .blog-count { font-family:var(--mono); font-size:.7rem; color:var(--faint); white-space:nowrap; }
+  .blog-scroll { overflow-y:auto; }
+  .cell.filler { pointer-events:none; }
+
+  /* ---------- print: the papers as documents ----------
+     Two columns here and only here. A printed page is a fixed frame, so the eye
+     returns to the top of column two for free; on a scrolling screen the same
+     layout would mean scrolling back up once per column. Everything that is
+     navigation rather than content is dropped. */
+  @media print {
+    :root { --ground:#fff; --surface:#fff; }
+    html, body { background:#fff; }
+    /* footer.site, not .foot — .foot only ever appears as .foot-in on a child,
+       so hiding it missed the real page footer and the street address printed
+       under the paper's own closing block. */
+    .nav, .cta, footer.site, .chatdock, .backlink, .icon-actions,
+    .dd-menu, .blog-tools { display:none !important; }
+    .view { display:none !important; }
+    .view.active { display:block !important; animation:none !important; }
+
+    @page { size:A4; margin:18mm 15mm 20mm; }   /* bottom leaves room for the footer */
+
+    .wrap { max-width:none; padding:0; }
+    section, .lead { padding:0; border:0; }
+    .lead { padding-bottom:6mm; border-bottom:1px solid var(--line); margin-bottom:6mm; }
+
+    .eyebrow { font-size:7.5pt; }
+    .lead h1 { font-size:24pt; line-height:1.1; margin:2mm 0 3mm; }
+    .lead .lede { font-size:10.5pt; max-width:none; margin-top:2mm; }
+    .lead .lede.kicker { font-size:11.5pt; }
+
+    .paper { max-width:none; column-count:2; column-gap:9mm; font-size:9.6pt; }
+    .paper p, .paper li { font-size:9.6pt; orphans:3; widows:3; }
+    .paper h3 { font-size:11.5pt; margin:4mm 0 1.5mm; break-after:avoid; }
+    .paper h4 { font-size:9.8pt; margin:3mm 0 1mm; break-after:avoid; }
+    .paper li, .paper .why { break-inside:avoid; }
+
+    /* Tables sit outside .paper, so they interrupt the columns and run full
+       width — which is what you want for a table in a two-column document. */
+    .paper-table { max-width:none; break-inside:avoid; margin:3mm 0 5mm; }
+    .paper-table table { font-size:9pt; }
+
+    /* The AI/ML paper carries its ten key steps as a .steps-list rather than
+       prose, so it needs the same treatment or it prints at screen size and
+       runs a page longer than papers twice its length. */
+    .sec-head h2 { font-size:13pt; margin:5mm 0 2mm; }
+    .sec-lede { font-size:9.6pt; max-width:none; }
+    .steps-list { column-count:2; column-gap:9mm; }
+    .stepitem { break-inside:avoid; padding:2mm 0; gap:4mm; }
+    .stepitem .idx { font-size:10.5pt; padding-top:0; }
+    .stepitem h4 { font-size:9.8pt; margin:0 0 1mm; }
+    .stepitem p { font-size:9.2pt; max-width:none; }
+    .stepitem .why { font-size:8.8pt; margin-top:1.5mm; }
+
+    /* The document does not need a link to itself. */
+    .byline .pdf-link { display:none; }
+    .byline { font-size:8pt; margin-top:3mm; }
+    .paper-about { max-width:none; margin-top:5mm; padding-top:3mm; }
+    .paper-about p { font-size:9pt; }
+    .paper-about .who { font-size:8pt; }
+
+    .print-footer { display:block; position:fixed; bottom:0; left:0; right:0;
+                    font-family:var(--mono); font-size:7.5pt; letter-spacing:.05em;
+                    color:var(--faint); border-top:1px solid var(--line);
+                    padding-top:2mm; }
+
+    a { color:inherit; text-decoration:none; }
+    * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
 
   .note { font-family:var(--mono); font-size:.73rem; color:var(--faint); letter-spacing:.04em; }
 
@@ -1308,72 +1434,22 @@
 
     <section>
       <div class="wrap">
-        <div class="lead-post">
-          <div>
-            <div class="postmeta"><span class="cat">White paper</span><span>31 August 2026</span><span>5 min read</span></div>
-            <h3>Maximizing AI and machine learning value</h3>
-            <p>A practitioner's approach: frame the problem, establish the data, build the process,
-              and prove it small before committing — then ten steps that decide whether an AI
-              investment returns anything at all.</p>
-            <button type="button" class="btn" data-goto="whitepaper"
-                    style="margin-top:1.2rem">Read the white paper</button>
-          </div>
-          <div class="pull">Set realistic accuracy expectations: perfection is not achievable.
-            Prefer a feasible solution to a theoretically better one.</div>
-        </div>
+        <div id="blog-featured"></div>
       </div>
     </section>
 
     <section style="border-top:0; padding-top:0">
       <div class="wrap">
-        <div class="grid3">
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Data engineering</span><span>2 June 2026</span></div>
-            <h3>The vendor name problem</h3>
-            <p>One supplier, forty-three spellings, and a finance team certain they know their top
-               ten. Why entity resolution is the least glamorous and most valuable thing in the
-               pipeline.</p>
-            <span class="more">Read →</span>
-          </div>
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Applied AI</span><span>19 May 2026</span></div>
-            <h3>Expert systems didn't go away</h3>
-            <p>Before the current wave, we captured how a thirty-year veteran made a judgement call
-               and ran it at scale. That pattern is still the highest-return AI most operations can
-               deploy.</p>
-            <span class="more">Read →</span>
-          </div>
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Spend intelligence</span><span>28 April 2026</span></div>
-            <h3>Rogue IT is a measurement problem</h3>
-            <p>Technology bought outside IT is not usually defiance. It is an expense line nobody
-               categorized, in a system nobody joined to the asset register.</p>
-            <span class="more">Read →</span>
-          </div>
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Agents</span><span>6 April 2026</span></div>
-            <h3>Agents that act, not agents that summarize</h3>
-            <p>A summary is a demo. An agent earns its place when it can take an action inside a
-               system of record and be held to the result.</p>
-            <span class="more">Read →</span>
-          </div>
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Model design</span><span>17 March 2026</span></div>
-            <h3>Optimizing for the wrong number</h3>
-            <p>A model that wins on the metric and loses on the outcome is a common and expensive
-               result. Choosing what to optimize is a business decision, not a technical one.</p>
-            <span class="more">Read →</span>
-          </div>
-          <div class="cell post">
-            <div class="postmeta"><span class="cat">Practice</span><span>25 February 2026</span></div>
-            <h3>Handing it over on purpose</h3>
-            <p>Designing an engagement so the client's team can run the system without us — and why
-               that produces better architecture than building it to keep.</p>
-            <span class="more">Read →</span>
-          </div>
+        <div class="blog-tools" id="blog-tools" hidden>
+          <input type="search" id="blog-q" class="blog-q" autocomplete="off"
+                 placeholder="Search white papers" aria-label="Search white papers">
+          <span class="blog-count" id="blog-count" aria-live="polite"></span>
         </div>
-        <p class="note" style="margin-top:1.4rem">The six entries above are samples — placeholder
-          content shown for layout. Real posts to be supplied.</p>
+        <div class="blog-scroll" id="blog-scroll">
+          <div class="grid3" id="blog-grid"></div>
+        </div>
+        <p class="note" id="blog-empty" hidden style="margin-top:1.4rem">Nothing matches that
+          search.</p>
       </div>
     </section>
 
@@ -1393,9 +1469,11 @@
   <!-- Reached from the blog's featured entry (data-goto="whitepaper"); it has no
        tab of its own, which is why 'whitepaper' must stay in the VIEWS array. -->
   <div class="view" id="view-whitepaper" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Maximizing AI and machine learning value</div>
     <header class="lead">
       <div class="wrap">
-        <div class="eyebrow">White paper · 31 August 2026</div>
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
         <h1>Maximizing AI and machine learning value — <span class="hl">a practitioner's approach.</span></h1>
         <p class="lede">AI and machine learning return value when they are pointed at a defined
           problem, fed data that actually contains the answer, and built on a process someone can
@@ -1403,6 +1481,7 @@
         <p class="lede">This paper sets out the approach: how to frame the problem, what to establish
           about the data before committing, the process that keeps a model useful after launch, and
           why the prototype comes before the roadmap.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 31 August 2026 · <a class="pdf-link" href="white-paper/pdf/maximizing-ai-and-ml-value.pdf" download>Download PDF</a></p>
       </div>
     </header>
 
@@ -1549,6 +1628,15 @@
       </div>
     </section>
 
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates researches, designs, develops and implements production software and AI systems, using the approach set out here.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
     <div class="cta">
       <div class="wrap cta-in">
         <div>
@@ -1557,6 +1645,1243 @@
              engagements.</p>
         </div>
         <button type="button" class="btn" data-goto="approach">See the method</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: VENDOR NAMES ==================== -->
+  <!-- Reached from the blog's Data engineering card (data-goto="vendor-names").
+       Source of truth for the text is white-paper/vendor-name-problem.md. -->
+  <div class="view" id="view-vendor-names" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · The vendor name problem</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>The vendor <span class="hl">name problem.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">One supplier, forty-three spellings, and a
+          finance team certain they know their <strong>top ten</strong>. Why
+          <strong>entity resolution</strong> is the least glamorous and most valuable thing in
+          the pipeline.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 2 June 2026 · <a class="pdf-link" href="white-paper/pdf/vendor-name-problem.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>Every spend analysis rests on a question that sounds trivial: <em>who did we pay?</em>
+            In practice the answer is scattered across dozens of spellings of the same name, in
+            several systems, in records typed by people who had no reason to care about
+            consistency.</p>
+          <p>Until those records are resolved to one supplier, every number downstream is wrong.
+            Category totals are wrong. Negotiating leverage is understated. Duplicate payments
+            hide. The top-ten supplier list — the one report every finance team trusts — is
+            confidently, quietly incorrect.</p>
+          <p>Entity resolution is the work of turning many records into one supplier. It has no
+            demonstration value, it produces no chart anyone wants to look at, and it is the
+            single highest-return step in a spend pipeline.</p>
+
+          <h3>The forty-three spellings</h3>
+          <p>One supplier generates variation from a dozen independent sources, and they
+            compound.</p>
+          <ul>
+            <li><b>Legal form.</b> <code>Inc</code>, <code>Inc.</code>, <code>Incorporated</code>,
+              <code>LLC</code>, <code>L.L.C.</code>, <code>Ltd</code>, <code>GmbH</code>,
+              <code>Pty Ltd</code> — with the suffix, without it, and punctuated three ways.</li>
+            <li><b>Abbreviation.</b> <code>MKTG</code> and <code>Marketing</code>.
+              <code>INTL</code>, <code>MFG</code>, <code>SVCS</code>. Whoever set up the vendor
+              master had a forty-character field and used it.</li>
+            <li><b>Case, punctuation and damage.</b> Trailing whitespace, control characters that
+              survived an export, encoding damage where an accent met the wrong codepage.</li>
+            <li><b>Legal entity versus trading name.</b> The invoice says one thing, the contract
+              another, and the cheque is made out to a third.</li>
+            <li><b>Corporate structure.</b> Dell Marketing L.P., Dell Products L.P., EMC
+              Corporation, VMware — four legal entities, one ultimate parent, and no string
+              similarity between the last two and the first two.</li>
+            <li><b>Card and expense channels.</b> Purchasing-card lines arrive as merchant
+              descriptors: <code>DELL 800-999-3355 TX</code>. Same supplier, not one shared field
+              with the AP record.</li>
+            <li><b>Multiple systems.</b> Two ERPs from an acquisition, a procurement tool, an
+              expense system — each with its own vendor master, IDs, and duplicates within it.</li>
+            <li><b>Time.</b> Companies are acquired, renamed and divested. A record correct in 2019
+              describes an entity that no longer exists.</li>
+          </ul>
+          <p>Forty-three spellings is not an exaggeration. It is what you get when a dozen sources
+            of variation multiply across a few hundred thousand transaction lines.</p>
+
+          <h3>Why the top ten is wrong</h3>
+          <p>The failure is not that the numbers are slightly off. It is that they are wrong in a
+            direction nobody checks. Fragmentation always <em>understates</em> a supplier: spend
+            that belongs to one relationship is divided among its variants, and each variant ranks
+            lower than the whole.</p>
+        </div>
+
+        <div class="paper-table">
+          <table>
+            <tr><th>As recorded</th><th>Spend</th><th>Rank</th></tr>
+            <tr><td>DELL MKTG L.P.</td><td>$1.6M</td><td>7</td></tr>
+            <tr><td>Dell Marketing LP</td><td>$1.1M</td><td>12</td></tr>
+            <tr><td>DELL PRODUCTS L.P.</td><td>$0.8M</td><td>19</td></tr>
+            <tr><td>Dell Mktg L.P. (duplicate vendor ID)</td><td>$0.4M</td><td>31</td></tr>
+            <tr><td>card and expense lines</td><td>$0.2M</td><td>—</td></tr>
+            <tr class="tot"><td><b>Resolved</b></td><td><b>$4.1M</b></td><td><b>2</b></td></tr>
+          </table>
+          <p class="cap">Illustrative. Every row is a real supplier with real invoices.</p>
+        </div>
+
+        <div class="paper">
+          <p>Nothing in the unresolved view suggests an error. The report is internally consistent,
+            reconciles to the ledger, and is wrong about the thing it exists to tell you. The
+            consequences are specific:</p>
+          <ul>
+            <li><b>Leverage is left on the table.</b> You negotiate as a $1.6M customer when you
+              are a $4.1M customer. The supplier's account team knows the real number. You do
+              not.</li>
+            <li><b>Tail spend looks like tail spend.</b> Fragments fall below the threshold where
+              anyone looks, so a major relationship is managed as thirty small ones.</li>
+            <li><b>Duplicate payments survive.</b> Detection keys on supplier plus invoice number.
+              Two spellings are two suppliers, so the duplicate never surfaces.</li>
+            <li><b>Contract coverage is overstated.</b> Spend under contract looks compliant
+              because the off-contract variants count as different suppliers.</li>
+            <li><b>Risk and concentration are invisible.</b> Concentration limits, sanctions
+              screening and supplier risk scoring all assume you know the counterparty.</li>
+          </ul>
+
+          <h3>Why this is harder than string matching</h3>
+          <p>The instinct is to reach for fuzzy matching. It is not sufficient, and it is not even
+            the main event.</p>
+          <p><b>High similarity, different entities.</b> <code>Dell Marketing L.P.</code> and
+            <code>Dell Products L.P.</code> are almost identical strings and are genuinely
+            different legal entities with different contracts and payment terms. Whether they
+            should be merged depends on the question being asked — a business decision, not a
+            distance threshold.</p>
+          <p><b>Zero similarity, same entity.</b> <code>IBM</code> and
+            <code>International Business Machines Corporation</code>. Alphabet and Google. Meta and
+            Facebook. No string metric will connect them. Only reference data will.</p>
+          <p>Name similarity is therefore one signal among several, and the others carry more
+            weight than people expect: tax identifiers, registered address, bank remittance
+            details, the GL codes a supplier is normally posted to, the buying entity, what was
+            bought, and the behavioural fingerprint of invoice cadence and amount distribution. A
+            match supported by four weak signals is stronger than one supported by a single strong
+            name score.</p>
+          <p><b>Scale.</b> Naïve comparison is quadratic — a few hundred thousand vendor records is
+            tens of billions of pairs. The work has to be blocked, and blocking is where most of
+            the recall is won or lost: a pair that never enters a block can never be matched, no
+            matter how good the scorer is.</p>
+
+          <h3>The grain problem</h3>
+          <p>There is no single correct answer to <em>who is this supplier</em>, because the right
+            grain depends on the question.</p>
+        </div>
+
+        <div class="paper-table">
+          <table>
+            <tr><th>Question</th><th>Right grain</th></tr>
+            <tr><td>What leverage do we have in a negotiation?</td><td>Ultimate parent</td></tr>
+            <tr><td>Who do we owe, and on what terms?</td><td>Legal entity</td></tr>
+            <tr><td>Who actually delivers, and what is our risk?</td><td>Operating entity or site</td></tr>
+            <tr><td>Which contract governs this line?</td><td>Contracting entity</td></tr>
+          </table>
+        </div>
+
+        <div class="paper">
+          <p>A layer that flattens everything to the ultimate parent cannot answer the second and
+            third questions. One that stops at the legal entity cannot answer the first. The
+            resolution is to keep the hierarchy rather than choose a level: resolve each record to
+            a canonical <b>legal entity</b> with a stable identifier, then attach parentage above
+            it, so reports roll up to whichever level the question needs. Choosing a single grain
+            early is the most common irreversible mistake in this work.</p>
+
+          <h3>The asymmetry that should govern the design</h3>
+          <p>False merges and false splits are not equally bad.</p>
+          <p>A <b>false split</b> leaves two records unmerged. The number is understated, the
+            fragment is visible, and someone eventually notices a familiar name in the wrong place.
+            It is a known unknown, and it is recoverable.</p>
+          <p>A <b>false merge</b> combines two genuinely different suppliers. The number is now
+            confidently wrong, it reconciles, nothing looks unusual, and it has corrupted a figure
+            someone is about to act on. It is very hard to detect after the fact, and it destroys
+            trust in the whole layer when it is found.</p>
+          <p class="why">This asymmetry should shape every threshold. Bias toward precision. Route
+            the uncertain band to human review rather than guessing. And never let an automated
+            merge be unexplainable: when a business owner challenges a number — and they will,
+            usually the number that matters most — the answer has to be a specific reason, not a
+            shrug.</p>
+
+          <h3>How it is actually done</h3>
+          <ul>
+            <li><b>Normalise deterministically first.</b> Case, whitespace, control characters,
+              encoding repair, legal-suffix handling, an abbreviation dictionary. Dull, rule-based
+              and testable — and it removes a large share of the variation before any model sees
+              the data. Probabilistic matching on unclean input wastes its discriminating power on
+              noise.</li>
+            <li><b>Block.</b> Partition into candidate groups on cheap keys — name prefixes,
+              phonetic keys, tax ID, postcode, domain. Use several passes with different keys,
+              because any single key has a blind spot.</li>
+            <li><b>Score on multiple signals.</b> Combine them into a calibrated score, not an
+              arbitrary weighted sum. A score that means something as a probability is what lets
+              you set thresholds honestly.</li>
+            <li><b>Resolve to a canonical entity</b> with a stable identifier that survives
+              re-runs. A report whose supplier IDs change every month cannot be compared to
+              itself.</li>
+            <li><b>Attach the hierarchy</b> — parentage, ultimate parent, firmographics — so the
+              grain question is answered by rolling up rather than re-resolving.</li>
+            <li><b>Queue the uncertain band for review.</b> Make it small enough to actually clear,
+              and capture every decision.</li>
+            <li><b>Persist decisions and feed them back.</b> Human adjudications are the most
+              valuable training data available. A layer that discards them re-asks the same
+              questions every month and never improves.</li>
+          </ul>
+
+          <h3>How to tell whether it worked</h3>
+          <p>Resist reporting <em>percentage matched</em>. It rewards over-merging, which is
+            exactly the failure mode with the worst consequences. Better measures:</p>
+          <ul>
+            <li><b>Spend under management</b> — the share of total spend attached to a resolved
+              supplier above the review threshold. This is the number that ties to value.</li>
+            <li><b>Precision on a sampled gold set</b> — stratified sample, adjudicated by hand,
+              reported honestly with the sample size.</li>
+            <li><b>Distinct supplier count before and after</b> — a sanity signal, not a target. A
+              large drop is expected; an implausibly large one means over-merging.</li>
+            <li><b>Stability across runs</b> — the share of records whose supplier ID is unchanged
+              month on month. Instability destroys trend reporting even when each run is
+              accurate.</li>
+            <li><b>Review queue burn-down</b> — if the uncertain band never clears, the thresholds
+              are wrong.</li>
+          </ul>
+          <p>Set these criteria before building, not after. A resolution layer with no agreed
+            measure of success cannot be said to have succeeded.</p>
+
+          <h3>Conclusion</h3>
+          <p>Entity resolution produces nothing anyone wants to demonstrate. There is no
+            visualisation, no model architecture worth discussing, and no moment where it looks
+            impressive. It is normalisation rules, blocking keys, calibrated thresholds and a
+            review queue.</p>
+          <p>It is also the step on which everything else depends. Classification applied to
+            fragmented suppliers classifies fragments. Anomaly detection on fragmented suppliers
+            finds nothing, because the baseline is split across the variants. Every downstream
+            number inherits the quality of this one.</p>
+          <p>The finance team is not wrong to trust their top ten. They are wrong about which
+            suppliers are in it — and they have no way to know that from the report itself.
+            Resolving the vendor name is what turns spend data into an answer somebody can
+            defend.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates implements the CXO Nexus enterprise spend analytics platform, including the resolution layer described here.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>This is the resolution layer.</h2>
+          <p>The CXO Nexus platform page shows where entity resolution sits in the pipeline, and
+             what the record looks like on either side of it.</p>
+        </div>
+        <button type="button" class="btn" data-goto="platform">See the pipeline</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: EXPERT SYSTEMS ==================== -->
+  <!-- Reached from the blog's Applied AI card (data-goto="expert-systems").
+       Source of truth for the text is white-paper/expert-systems.md. -->
+  <div class="view" id="view-expert-systems" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Expert systems didn't go away</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>Expert systems <span class="hl">didn't go away.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">An old idea with relevance. Before the
+          current wave, we captured how a <strong>thirty-year veteran</strong> made a judgement
+          call and ran it at scale. That pattern is still the <strong>highest-return AI</strong>
+          most operations can deploy.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 19 May 2026 · <a class="pdf-link" href="white-paper/pdf/expert-systems.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>Around twenty years ago we built an expert system with IBM for AK Steel. It encoded
+            the judgement of a thirty-year veteran operator — decisions that had never been written
+            down — and applied them on every shift rather than on the shifts he happened to work.
+            It saved roughly $10 million a year.</p>
+          <p><b>It is still running. It is still saving money.</b></p>
+          <p>That fact deserves more attention than it usually gets. In an industry where a
+            production model is doing well to survive eighteen months before drift forces a
+            retrain, a system built two decades ago is still making the same decisions correctly.
+            This paper argues that the pattern behind it — elicit what a skilled practitioner
+            knows, encode it, run it everywhere — remains the highest-return application of AI
+            available to most operations, and explains where it wins, where it loses, and why the
+            historic barrier to building one has largely fallen away.</p>
+
+          <h3>What the pattern actually is</h3>
+          <p>An expert system captures how a person makes a decision and executes that decision on
+            every case, consistently, without fatigue.</p>
+          <p>It is worth being precise about the distinction from machine learning, because the two
+            get confused. A learned model infers rules from labelled examples. An expert system
+            takes the rules from a person who already has them. There is no training set, no
+            labelling exercise, and no requirement that the past contains enough examples of the
+            situation you care about.</p>
+          <p>That difference matters most where it is least convenient: rare events, new processes,
+            and decisions that were never logged in a form a model could learn from.</p>
+
+          <h3>The steel case</h3>
+          <p>A thirty-year veteran operator on a production line accumulates a body of knowledge
+            that is almost entirely undocumented. He knows which combinations of conditions precede
+            a problem. He knows when the specification is a hard limit and when it is a guideline.
+            He knows which readings to trust and which sensor drifts. Most of this he cannot
+            readily articulate — asked why he made a call, the honest answer is often
+            <em>because that is what it needed</em>.</p>
+          <p class="why">The value of encoding that was not that the system out-thought him. It was
+            that it held the line when he was not there.</p>
+          <p>An operation does not run at the level of its best operator. It runs at the average of
+            everyone on every shift, including the new hire on nights and the stand-in during
+            holidays. The gap between the best operator's judgement and the median decision made
+            across a year is enormous, and it shows up as scrap, rework, downtime and lost
+            throughput. Closing that gap — not exceeding the expert, just reaching him
+            consistently — was worth about $10 million a year.</p>
+
+          <h3>Why it lasted twenty years</h3>
+          <p>The longevity is the part that should change how people think about this.</p>
+          <ul>
+            <li><b>The knowledge does not drift.</b> The system encodes process behaviour and
+              material physics. The relationship between conditions and outcome is the same today
+              as it was then. Contrast this with a model trained on consumer behaviour or fraud
+              patterns, where the world moves underneath the model and yesterday's accuracy is no
+              guarantee of today's.</li>
+            <li><b>It is inspectable.</b> Twenty years of engineers have been able to open it, read
+              what it does, and understand why. A rule states its own reasoning. A change can be
+              reviewed before it ships. Nobody has ever had to take its output on trust.</li>
+            <li><b>It fails loudly.</b> Given input outside anything anticipated, a rule simply does
+              not fire and the system says so. It does not produce a confident, plausible, wrong
+              answer — the characteristic failure mode of the systems currently receiving all the
+              attention, and a genuinely dangerous property in an operation where someone acts on
+              the output.</li>
+            <li><b>It has no infrastructure treadmill.</b> No retraining schedule, no feature store
+              to maintain, no accelerator to budget for, no dependency that goes end-of-life every
+              eighteen months.</li>
+          </ul>
+
+          <h3>Why the pattern was abandoned anyway</h3>
+          <p>It is worth being honest about this rather than nostalgic. Expert systems fell out of
+            use for real reasons, not only fashionable ones.</p>
+          <ul>
+            <li><b>The knowledge acquisition bottleneck.</b> Getting rules out of an expert's head
+              was slow and expensive — a skilled interviewer, many sessions, and an expert willing
+              to spend weeks on it. Worse, experts genuinely cannot articulate much of what they
+              know, so the elicitation had to infer the rule from watching decisions rather than
+              from asking.</li>
+            <li><b>Brittleness at the edges.</b> Systems handled the anticipated cases well and the
+              unanticipated ones not at all.</li>
+            <li><b>Maintenance load.</b> Rule sets grow, interact, and eventually nobody is
+              confident about what changing one will do.</li>
+            <li><b>Over-promise.</b> The 1980s commercial wave claimed far more than it delivered,
+              the funding collapsed, and <em>expert system</em> became a phrase that made you sound
+              twenty years out of date.</li>
+          </ul>
+          <p>Then machine learning arrived, then deep learning, then language models, and each
+            absorbed the attention and the budget. The pattern was not displaced because something
+            better was found for the same problem. It was displaced because the industry's
+            attention moved — and a technique that had stopped being interesting stopped being
+            considered, while the systems already built carried on quietly working.</p>
+
+          <h3>Where it still beats a learned model</h3>
+          <ul>
+            <li><b>No labelled history exists.</b> A new line, a rare failure mode, a decision
+              nobody recorded. A model cannot learn what the data does not contain; a person can
+              still tell you.</li>
+            <li><b>The decision has to be explained.</b> Regulated processes, safety cases, anything
+              a customer or auditor will challenge. "The model scored it 0.83" is not an
+              explanation. A fired rule is.</li>
+            <li><b>Errors are expensive and asymmetric.</b> When being confidently wrong costs far
+              more than declining to answer, a system that refuses to fire outside its competence
+              is worth more than one that always produces something.</li>
+            <li><b>The input is already structured.</b> Sensor readings, ERP fields, process
+              telemetry. Most of the machinery of modern AI exists to cope with unstructured input;
+              if yours is structured, you are paying for capability you do not need.</li>
+            <li><b>The expert exists and is available.</b> Which brings us to the reason this is
+              urgent.</li>
+          </ul>
+
+          <h3>Where it loses</h3>
+          <p>Fairness requires stating the other half. Expert systems are the wrong choice for
+            perception — images, audio, free text — and for high-dimensional pattern recognition
+            where the signal genuinely is a statistical regularity nobody could articulate. They
+            are wrong where the domain really does drift, such as fraud and pricing, and they are
+            wrong when nobody actually knows the rules. If your best practitioner cannot outperform
+            chance, there is nothing to elicit and you need a model that learns.</p>
+          <p>The failure to avoid is treating this as an ideological choice. It is a question about
+            the problem: does the knowledge exist in a person, and is the domain stable? If yes,
+            encode it. If no, learn it.</p>
+
+          <h3>The bottleneck has moved</h3>
+          <p>Here is what has actually changed, and why the pattern deserves reconsideration now
+            rather than merely respect.</p>
+          <p>The historic cost of an expert system was elicitation — the weeks of interviews, the
+            analyst translating them into rules, the slow round trips to validate. That cost has
+            fallen sharply. A language model can conduct the structured interview, work through
+            decision logs and shift notes to propose candidate rules, spot contradictions between
+            what an expert says and what the records show, draft the first implementation, and
+            generate the test cases that prove it.</p>
+          <p>That suggests a specific architecture, and it is the one we would build today:</p>
+          <ul>
+            <li><b>A language model at the edges</b> — reading unstructured input, eliciting and
+              maintaining the rules, explaining outcomes in plain language.</li>
+            <li><b>A deterministic engine at the core</b> — making the decision, recording which
+              rule fired and on what evidence.</li>
+          </ul>
+          <p>The model handles what it is genuinely good at: language, ambiguity, and
+            interpretation. The decision itself stays in a component that is inspectable, testable,
+            and cannot hallucinate. This gets the elicitation speed of the current wave with the
+            durability and auditability of the old pattern — and it is a far better answer for an
+            operations decision than putting a language model in the decision path and hoping.</p>
+
+          <h3>Why this is the highest-return AI most operations can deploy</h3>
+          <p>Three reasons, and none of them are technical.</p>
+          <ul>
+            <li><b>The gap is consistency, not capability.</b> Most operations already contain
+              someone who makes the right call. The loss is not that nobody knows — it is that the
+              knowledge is present on some shifts and absent on others. Capturing the best
+              judgement and applying it everywhere is a large, immediate gain that requires no new
+              science.</li>
+            <li><b>The expertise is leaving.</b> The thirty-year veteran is, by definition, near
+              the end of a thirty-year career. When they retire the knowledge goes with them, and
+              no amount of subsequent investment recovers it. There is a window, it is closing in
+              most industries right now, and it does not reopen.</li>
+            <li><b>The cost profile is unusually favourable.</b> No labelling programme, no
+              accelerator budget, no retraining schedule. The dominant cost is the expert's time,
+              which is finite for reasons that have nothing to do with the project.</li>
+          </ul>
+
+          <h3>Conclusion</h3>
+          <p>Expert systems did not fail. They went out of fashion, which is a different thing, and
+            the industry stopped distinguishing between the two.</p>
+          <p>The system we built for AK Steel has been running for two decades and is still saving
+            money — a claim very few modern AI deployments will be able to make in 2045. It did not
+            out-think anyone. It took what one experienced person knew, and made it available on
+            every shift.</p>
+          <p>That is still the most valuable thing most operations can do with AI. The tools for
+            building it have improved considerably. The people whose judgement is worth capturing
+            are retiring. Both of those facts point the same way.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates researches, designs, develops and implements production software and AI systems, including the expert system described here.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Whose judgement is about to walk out?</h2>
+          <p>If there is someone in your operation everybody defers to, that is the place to
+             start — and the window is not open indefinitely.</p>
+        </div>
+        <button type="button" class="btn js-chat-open">Ask Rivet</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: ROGUE IT ==================== -->
+  <!-- Reached from the blog's Spend intelligence card (data-goto="rogue-it").
+       Source of truth for the text is white-paper/rogue-it-spend.md. -->
+  <div class="view" id="view-rogue-it" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Rogue IT is a measurement problem</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>Rogue IT is a <span class="hl">measurement problem.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">Technology bought outside IT is not usually
+          <strong>defiance</strong>. It is an expense line nobody categorized, in a system nobody
+          <strong>joined to the asset register</strong>.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 28 April 2026 · <a class="pdf-link" href="white-paper/pdf/rogue-it-spend.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>Most organisations discuss rogue IT — shadow IT, unsanctioned spend, whatever the
+            local term is — as a behavioural problem. Somebody went around the process. The
+            response is a policy memo, a stricter approval workflow, and a mild sense of
+            grievance.</p>
+          <p>That framing is wrong, and it is why the problem never goes away.</p>
+          <p>Rogue IT is overwhelmingly a <b>measurement</b> failure. A manager needed a tool, the
+            sanctioned route would have taken six weeks, and a corporate card took four minutes.
+            The purchase was neither hidden nor defiant. It posted to a departmental expense code,
+            under an approval threshold, against a merchant descriptor that matches nothing in the
+            vendor master — and was never joined to the asset register, so no system anywhere knows
+            the tool exists.</p>
+          <p class="why">You cannot govern what you cannot see. Attack rogue IT first as a data
+            problem: find it in the spend, quantify it, and only then decide what to do about it.
+            The enforcement conversation is unproductive until the number exists.</p>
+
+          <h3>It is not a discipline problem</h3>
+          <p>Start by discarding the moral frame. In our experience the overwhelming majority of
+            unsanctioned technology purchases share one profile: a competent person, doing their
+            job, choosing the fastest route to a tool they needed.</p>
+          <p>If the sanctioned path takes six weeks and a credit card takes four minutes, the
+            organisation has expressed a preference, whatever the policy says. People followed the
+            incentive that was actually in place.</p>
+          <p>This matters practically, not just rhetorically. If you treat it as defiance, your
+            response is enforcement — blocking, memos, tighter thresholds — which pushes the same
+            purchases further out of view. Personal cards. Expenses coded as "training". Purchases
+            made by a team in another country. You have not reduced the spend; you have reduced the
+            visibility of it, which is the opposite of the goal.</p>
+
+          <h3>Why it is invisible</h3>
+          <p>The invisibility is mechanical, and each mechanism is mundane.</p>
+          <ul>
+            <li><b>It arrives as expense, not procurement.</b> No purchase order, so no procurement
+              record, so none of the controls that hang off a PO.</li>
+            <li><b>It posts to the wrong place.</b> The GL code is departmental — marketing,
+              operations, R&amp;D — not technology. Any report built on spend under the IT cost
+              centres excludes it by construction.</li>
+            <li><b>The supplier does not resolve.</b> A card line arrives as a merchant descriptor.
+              It shares no field with a vendor master record, so it is not recognised as a
+              technology supplier, or as the same supplier three other departments are also
+              paying.</li>
+            <li><b>It sits under the threshold.</b> $400 a month is invisible in a way that $4,800
+              a year is not. Approval limits are per-transaction; the spend is per-month.</li>
+            <li><b>It renews silently.</b> Auto-renewal means the decision is made once and never
+              revisited. No one re-approves it, so no one re-examines it.</li>
+            <li><b>Nothing joins it to the asset register.</b> The decisive one. Even where the
+              spend is visible, the tool never enters the CMDB, the software asset register, the
+              SSO directory or the offboarding checklist. The finance system knows you pay for it.
+              No operational system knows it exists. Nothing connects the two.</li>
+          </ul>
+
+          <h3>What it costs</h3>
+          <p>The direct overspend is real but it is rarely the largest number.</p>
+          <ul>
+            <li><b>Duplicate tooling.</b> Four departments buy four different tools that do the
+              same thing — and often several buy the <em>same</em> tool on separate contracts at
+              separate prices.</li>
+            <li><b>Lost leverage.</b> Fragmented purchases of one vendor are invisible as a
+              relationship, so you buy at list price repeatedly instead of negotiating once. This
+              is the same fragmentation that breaks the supplier top-ten, arriving through a
+              different door.</li>
+            <li><b>Retail renewal terms.</b> Nobody negotiates a renewal they do not know is
+              coming.</li>
+            <li><b>Uncontracted data exposure.</b> Customer or employee data in a SaaS product with
+              no contract, no data processing agreement, and no security review — an exposure that
+              exists whether or not anyone has noticed it.</li>
+            <li><b>Access that outlives employment.</b> A tool outside SSO is a tool outside
+              offboarding. The leaver keeps their login, and no process will ever catch it.</li>
+            <li><b>An asset register that is wrong.</b> Every downstream process that trusts it —
+              audit, licence compliance, security posture, disaster recovery scope — inherits the
+              error.</li>
+          </ul>
+          <p>Only the first three are money. The rest are risk, and the risk is unquantified
+            precisely because the spend was never measured.</p>
+
+          <h3>Why the usual responses fail</h3>
+          <p><b>Policy and blocking.</b> Addresses the symptom, worsens the visibility, and does
+            nothing about the six-week provisioning time that caused it.</p>
+          <p><b>Network discovery.</b> Genuinely useful, and structurally incomplete.
+            Traffic-based discovery misses anything used on a personal device, on a home network,
+            or through a browser session it cannot inspect — which is most modern SaaS.</p>
+          <p><b>Asking people.</b> Surveys of department heads return what they remember and are
+            willing to declare. They often do not know either: the person who bought the tool left
+            last year, and the card is now on someone else's expense report.</p>
+          <p>Each of these starts from the tool. The money is a better starting point, because a
+            purchase always leaves a financial trace even when it leaves no technical one.</p>
+
+          <h3>Measure it from the spend</h3>
+          <p>The reliable path runs through accounts payable and the card programme, not the
+            network.</p>
+          <ul>
+            <li><b>Resolve the supplier.</b> Merchant descriptors, expense-line free text and
+              vendor master records all have to resolve to one canonical supplier before anything
+              can be counted. Unglamorous entity-resolution work, and nothing downstream works
+              without it.</li>
+            <li><b>Classify at line-item level.</b> Not at supplier level — a supplier can sell you
+              both technology and something else. Classification has to reach the individual line
+              to separate a software subscription from a conference booking on the same card.</li>
+            <li><b>Enrich with what the supplier actually is.</b> A resolved supplier can be
+              matched against reference data to establish that it is a software vendor at all,
+              regardless of which GL code the line was posted to.</li>
+            <li><b>Join spend to the operational registers.</b> Take everything identified as
+              technology spend and join it to the asset register, the CMDB and the SSO directory.
+              <b>The gap between what is paid for and what is known about is the rogue IT
+              number.</b> It is a join, not a discovery tool.</li>
+            <li><b>Flag it on the record, permanently.</b> The output should be an attribute on the
+              transaction — <em>this line is technology, bought outside IT, on this cost centre</em>
+              — so the measurement is continuous. A study is out of date the month it lands; a flag
+              on every line is a live control.</li>
+          </ul>
+
+          <h3>What to do with the number</h3>
+          <p><b>Lead with consolidation, not enforcement.</b> The first pass usually reveals
+            several departments paying separately for the same product. Consolidating those is a
+            saving nobody has to be told off to achieve, and it buys the credibility for everything
+            that follows.</p>
+          <p><b>Fix the risk before the commercials.</b> Getting a discovered tool into SSO and the
+            offboarding process is more urgent than renegotiating its price. Access outliving
+            employment is the exposure that turns into an incident.</p>
+          <p><b>Fix the provisioning time.</b> This is the actual root cause. If the sanctioned
+            route stays six weeks, rogue IT regenerates continuously no matter how well you measure
+            it. A fast-track path for low-value, low-risk tools removes most of the pressure.</p>
+          <p><b>Set thresholds that reflect annual value.</b> Approve on the twelve-month cost, not
+            the monthly charge, so a $400/month subscription meets the same scrutiny as a $4,800
+            purchase.</p>
+
+          <h3>How to tell whether it is working</h3>
+          <ul>
+            <li><b>Rogue spend as a share of total technology spend</b>, trended. The absolute
+              number matters less than the direction.</li>
+            <li><b>Time to provision a sanctioned tool.</b> The leading indicator. If this does not
+              fall, nothing else will hold.</li>
+            <li><b>Duplicate tool count</b> — distinct products serving the same function.</li>
+            <li><b>Contract and DPA coverage</b> — the share of technology suppliers with both.</li>
+            <li><b>SSO and register coverage</b> — the share of paid-for tools that operational
+              systems know about. The join above, reported as a percentage rather than a gap.</li>
+          </ul>
+
+          <h3>Conclusion</h3>
+          <p>Rogue IT is not a story about people breaking rules. It is a story about an expense
+            line that no system categorised as technology, attached to a supplier no system
+            resolved, for a tool no system recorded.</p>
+          <p>Every part of that is a measurement failure, and every part is fixable with data work
+            rather than policy. Resolve the supplier, classify the line, join it to the asset
+            register, and the invisible spend becomes an ordinary number on an ordinary report.</p>
+          <p>Once it is a number, it can be managed. Until then, every conversation about it is a
+            conversation about anecdotes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates implements the CXO Nexus enterprise spend analytics platform, which surfaces exactly this: technology spend resolved, classified at line-item level, and flagged against the cost centre that bought it.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Start with the spend, not the network.</h2>
+          <p>The CXO Nexus platform resolves the supplier, classifies the line, and flags
+             technology bought outside IT against the cost centre that bought it.</p>
+        </div>
+        <button type="button" class="btn" data-goto="platform">See the pipeline</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: WRONG NUMBER ==================== -->
+  <!-- Reached from the blog's Model design card (data-goto="wrong-number").
+       Source of truth for the text is white-paper/optimize-for-wrong-number.md. -->
+  <div class="view" id="view-wrong-number" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Optimizing for the wrong number</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>Optimizing for the <span class="hl">wrong number.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">A model that wins on the metric and loses on
+          the outcome is a common and expensive result. Choosing what to optimize is a
+          <strong>business decision</strong>, not a <strong>technical one</strong>.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 17 March 2026 · <a class="pdf-link" href="white-paper/pdf/optimize-for-wrong-number.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>The most expensive failure in applied machine learning is not a model that performs
+            badly. It is a model that performs well — against a target nobody should have
+            chosen.</p>
+          <p>This failure is dangerous precisely because it does not look like failure. The metric
+            improves. The validation curve behaves. The team ships on schedule and reports a win.
+            Six months later the business number has not moved, and nobody can explain why, because
+            every technical indicator is still green.</p>
+          <p>Choosing the objective is the highest-leverage decision in the whole project, and it
+            is the one most often made by default — inherited from a tutorial, a benchmark, or
+            whatever the library optimises out of the box.</p>
+
+          <h3>The failure looks like success</h3>
+          <p>Consider the shape of it. A team is asked to reduce customer churn. They build a churn
+            classifier, tune it hard, and reach 0.91 AUC — a genuinely good model. It goes into
+            production. Retention runs campaigns against its output. A year later, churn is
+            unchanged.</p>
+          <p class="why">Nothing in the modelling was wrong. The model predicts churn accurately.
+            The problem is that accurate churn prediction and reduced churn are different
+            objectives, and the project optimised the first while being paid for the second.</p>
+          <p>Worse, this failure resists debugging. Nobody investigates a model that is hitting its
+            numbers. The instinct is to tune further — more features, a bigger model, better
+            calibration — which improves the metric again and moves the outcome not at all. Teams
+            can spend a year on that treadmill.</p>
+
+          <h3>Where the gap comes from</h3>
+          <p>Every metric is a proxy for an outcome. Proxies diverge, and they diverge in specific,
+            recognisable ways.</p>
+          <ul>
+            <li><b>Accuracy on imbalanced problems.</b> A fraud model that flags nothing is 99.9%
+              accurate. Well known, and still ships regularly.</li>
+            <li><b>Optimising globally when you act locally.</b> AUC measures ranking across the
+              whole distribution. If the fraud team can investigate two hundred cases a week, the
+              only region that matters is the top two hundred. A model with better AUC and worse
+              precision in that slice is worse for the business and better on the report.</li>
+            <li><b>Treating all errors as equal.</b> Minimising RMSE weights a $400 error on a
+              small account exactly like a $400 error on the account that carries the quarter.
+              Squared error is a mathematical convenience, not a statement about your P&amp;L.</li>
+            <li><b>The wrong horizon.</b> Predicting next month's churn when the retention
+              intervention takes a quarter means every correct prediction arrives too late to act
+              on.</li>
+            <li><b>Predicting the un-actionable.</b> A precision-tuned churn model concentrates on
+              the customers it is most confident about — usually the ones already gone, having
+              cancelled the auto-renewal and stopped logging in. The customers you can still save
+              sit in the uncertain band the model was tuned to avoid.</li>
+            <li><b>Proxy metrics with a life of their own.</b> Click-through optimised hard enough
+              produces clickbait. Engagement optimised hard enough produces outrage. The metric
+              goes up, the business degrades, and the model is working exactly as specified.</li>
+          </ul>
+
+          <h3>The cost matrix nobody wrote down</h3>
+          <p>Underneath most of these is one omission: nobody stated what the errors cost. False
+            positives and false negatives are almost never equally expensive, and the ratio between
+            them determines the correct operating point. That ratio is a business fact. It cannot
+            be derived from the data, and it is not the modeller's to invent.</p>
+        </div>
+
+        <div class="paper-table">
+          <table>
+            <tr><th>Churn example</th><th>Cost</th><th>What it is</th></tr>
+            <tr><td>Retention offer</td><td>$200</td><td>what a false positive costs</td></tr>
+            <tr><td>Value of a saved customer</td><td>$3,000</td><td>what a false negative costs</td></tr>
+            <tr class="tot"><td><b>Ratio</b></td><td><b>1 : 15</b></td><td>—</td></tr>
+          </table>
+          <p class="cap">Illustrative. Ten minutes with the business owner establishes this.</p>
+        </div>
+
+        <div class="paper">
+          <p>At fifteen to one, you should be willing to accept a great many false positives to
+            avoid one false negative. Yet the default instinct — and the default threshold in most
+            libraries — is to balance the two, and a team asked to "improve precision" will tune
+            away from exactly the customers worth saving. Establishing this ratio changes the
+            threshold, the metric, and sometimes the entire choice of model. It is routinely
+            skipped.</p>
+
+          <h3>The number has to attach to a decision</h3>
+          <p>A prediction that changes nothing has no value, however accurate it is. Before
+            choosing a metric, three questions should have concrete answers:</p>
+          <ul>
+            <li><b>What action does this change?</b> If the answer is "it gives us visibility",
+              there is no decision, and therefore nothing to optimise toward.</li>
+            <li><b>Who takes that action, and what is their capacity?</b> This sets the operating
+              point. A team that can work two hundred cases a week defines a top-200 problem, not a
+              whole-distribution problem.</li>
+            <li><b>How long does the action take to work?</b> This sets the prediction horizon. A
+              forecast that arrives after the last moment it could have been acted on is a report,
+              not a model.</li>
+          </ul>
+          <p>If those three cannot be answered, the metric cannot be chosen — and the honest
+            response is to stop and answer them, not to pick a default and proceed.</p>
+
+          <h3>Goodhart's law arrives faster than it used to</h3>
+          <p><em>When a measure becomes a target, it ceases to be a good measure.</em> Not a new
+            observation, but two things have changed.</p>
+          <p>First, optimisers are much stronger than they were. A modern model asked to maximise a
+            proxy will find the gap between that proxy and the intended outcome, and it will find
+            it efficiently. Capability makes this worse, not better — a weak model optimising the
+            wrong objective fails harmlessly; a strong one succeeds at the wrong thing.</p>
+          <p>Second, the loop is faster. Systems retrain on data their own decisions generated, so
+            a proxy mismatch compounds instead of staying constant.</p>
+          <p>The practical consequence: the more capable the model, the more precisely the
+            objective needs to be stated. Vague targets were survivable when nothing could pursue
+            them effectively.</p>
+
+          <h3>How to choose the number</h3>
+          <ul>
+            <li><b>Start from the decision, not the data.</b> Write the sentence: <em>when this
+              number arrives, [who] will do [what] differently.</em> If it cannot be written, stop
+              here.</li>
+            <li><b>Write the cost matrix in currency.</b> With the business owner in the room. Both
+              error types, in money, even approximately — an order of magnitude is enough to move
+              the threshold correctly.</li>
+            <li><b>Fix the operating point before training.</b> "We will act on the top 200 per
+              week." That sentence determines which metric is meaningful.</li>
+            <li><b>Choose the metric that matches it.</b> If you act on a top slice, measure the
+              top slice. If errors are asymmetric, use a cost-weighted loss. If large accounts
+              matter more, weight by value rather than by count.</li>
+            <li><b>Add a guardrail.</b> One metric that must not get worse, chosen to catch the
+              proxy going feral. Optimising engagement, guard on complaints. Optimising recall,
+              guard on the review queue.</li>
+            <li><b>Agree the counterfactual before you start.</b> What happens without the model?
+              Without a baseline, any result can be presented as a success.</li>
+            <li><b>Measure the outcome, not only the metric.</b> Hold out a control group and
+              report the business number. It is the only measurement that answers the question the
+              project was funded to answer, and the one most often missing.</li>
+          </ul>
+
+          <h3>Who owns the choice</h3>
+          <p>This is the argument in the title, and it is worth stating plainly.</p>
+          <p>The technical team owns <b>how</b> to hit the target: architecture, features,
+            training, validation, deployment. That is their expertise and it should not be
+            second-guessed.</p>
+          <p>The business owns <b>what</b> the target is: which error is more expensive, what
+            capacity exists to act, what horizon is useful, what must not get worse. These are not
+            technical questions. They have no technically correct answer. They are statements about
+            how the organisation makes money and what it is willing to trade.</p>
+          <p>When the objective is delegated to the technical team — usually by omission rather
+            than decision — it defaults to whatever is conventional. And convention in machine
+            learning is shaped by academic benchmarks, designed for comparability across papers,
+            not for your profit and loss. Accuracy, F1 and AUC are excellent for ranking published
+            results. None of them knows what a false negative costs you.</p>
+
+          <h3>How to tell it has happened to you</h3>
+          <ul>
+            <li>Model metrics are good and the business metric is flat.</li>
+            <li>The output exists and nobody uses it.</li>
+            <li>The team is tuning the metric rather than questioning it.</li>
+            <li>The metric was chosen before anyone described the decision it supports.</li>
+            <li>Nobody can state the cost of a false positive in currency.</li>
+            <li>There is no control group, so no one can say what would have happened anyway.</li>
+          </ul>
+          <p>Any two of these together are enough to justify stopping and revisiting the objective.
+            That conversation is uncomfortable — it implies the last several months optimised the
+            wrong thing — and it is far cheaper than another two quarters of tuning.</p>
+
+          <h3>Conclusion</h3>
+          <p>Most failed machine learning projects do not fail technically. They hit their targets.
+            The target was wrong, the wrongness was invisible because the metric kept improving,
+            and the mistake was made in the first week by someone choosing a default.</p>
+          <p>Choosing what to optimise is the point where the business decides what it actually
+            wants, in enough detail that a machine can pursue it relentlessly. That is not a task
+            to delegate to whoever happens to be writing the training loop. It belongs to the
+            people who know what the errors cost — and ten minutes of their time, before the
+            modelling starts, is worth more than any amount of tuning afterwards.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates researches, designs, develops and implements production software and AI systems, starting with what the system is actually for.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>What would this model change?</h2>
+          <p>If the answer is not a sentence about who does what differently, that is the
+             conversation to have before any modelling starts.</p>
+        </div>
+        <button type="button" class="btn" data-goto="approach">See the method</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: HANDOVER ==================== -->
+  <!-- Reached from the blog's Practice card (data-goto="handover").
+       Source of truth for the text is white-paper/handing-it-over-on-purpose.md. -->
+  <div class="view" id="view-handover" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Handing it over on purpose</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>Handing it over <span class="hl">on purpose.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">Designing an engagement so the client's team
+          can <strong>run the system without us</strong> — and why that produces
+          <strong>better architecture</strong> than building it to keep.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 25 February 2026 · <a class="pdf-link" href="white-paper/pdf/handing-it-over-on-purpose.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>Most consultancies build to keep. Nobody says so, and it is rarely a conscious
+            decision, but the incentives point that way and the resulting systems show it: bespoke
+            conventions, tribal knowledge, a deploy that requires a phone call.</p>
+          <p>We design engagements the other way — so that the client's own team can run the system
+            without us. That sounds like a commercial concession, and it partly is. But the
+            substantive argument is different: <b>designing for handover produces better
+            architecture than designing to keep.</b> Not as a happy side effect. As a direct
+            consequence of the constraint.</p>
+          <p class="why">Every requirement handover imposes — write it down, automate it, choose
+            the boring option, make it observable — is something a well-built system should have
+            anyway. Handover makes them non-optional, and supplies a test that cannot be argued
+            with: someone who was not there has to be able to run it.</p>
+
+          <h3>The default is retention, and it shows in the code</h3>
+          <p>Building to keep does not usually look like sabotage. It looks like a series of
+            individually reasonable decisions taken by people with no reason to decide
+            otherwise:</p>
+          <ul>
+            <li>A framework written for this project, elegant and undocumented, understood by the
+              two people who wrote it.</li>
+            <li>Conventions that were never written down because everyone in the room already knew
+              them.</li>
+            <li>A clever solution where a boring one would have worked, because the clever one was
+              more interesting to build.</li>
+            <li>An environment that reproduces reliably on one laptop.</li>
+            <li>A deploy with three manual steps that are obvious if you have done them before.</li>
+            <li>Failure modes that are well understood and never described anywhere.</li>
+          </ul>
+          <p>None of this requires bad intent. It is what happens in the absence of a forcing
+            function. Nobody sets out to build a system only they can run — it is the default
+            outcome when nobody ever has to prove otherwise. The cost lands on the client
+            eventually, and it is larger than the invoice: a system they depend on and cannot
+            change, staffed by people they must keep hiring back.</p>
+
+          <h3>Handover as a forcing function</h3>
+          <p>Now impose one constraint: <em>a competent engineer who was not here must be able to
+            run this.</em> Watch what that eliminates.</p>
+          <ul>
+            <li><b>Knowledge in someone's head becomes inadmissible.</b> If it is not written down
+              or encoded in the system, it does not exist. That converts tribal knowledge into
+              runbooks, comments and tests.</li>
+            <li><b>Clever abstractions lose their appeal.</b> An abstraction only pays for itself
+              if the next person understands it faster than they would have understood the thing it
+              replaced. Handover makes you ask that honestly.</li>
+            <li><b>Manual steps become defects.</b> A deploy someone has to be talked through is a
+              deploy that will eventually be done wrong.</li>
+            <li><b>Unreproducible environments become blockers.</b> If a new engineer cannot get it
+              running on day one, that is a bug in the system, not in the engineer.</li>
+            <li><b>Silent failure becomes unacceptable.</b> Someone unfamiliar has to diagnose this
+              at 3am, so alerts have to say what is wrong and what to do about it.</li>
+          </ul>
+          <p>Read that list again with the handover framing removed. Every item is simply good
+            engineering practice. Handover does not ask for anything that was not independently
+            correct — it removes the option of skipping it, and supplies a test that produces a
+            clear pass or fail.</p>
+          <p class="why">That is the whole argument. The constraint is not a tax on the
+            architecture. It is the quality bar, made externally verifiable.</p>
+
+          <h3>Why end-loaded handover fails</h3>
+          <p>The common pattern is to build for six months and then run a two-week "knowledge
+            transfer" at the end. It reliably fails, for reasons that are structural rather than
+            about effort.</p>
+          <ul>
+            <li><b>The architecture is already shaped.</b> By month six the system reflects who
+              built it — the conventions, the abstractions, the assumed context. Two weeks of
+              walkthroughs cannot unwind that.</li>
+            <li><b>Walkthroughs transfer vocabulary, not capability.</b> The receiving team learns
+              what the components are called. They do not learn what happens when the third one
+              fails at month-end, because they have never seen it happen.</li>
+            <li><b>They were absent for the decisions.</b> What survives handover badly is not
+              <em>what</em> the system does — that is readable — but <em>why</em> it does it that
+              way, and which alternatives were rejected. A team that sees only the outcome will
+              re-litigate every settled question the first time something breaks.</li>
+            <li><b>It is testing at the end.</b> Every other quality property is built in
+              continuously and verified throughout. Handover gets treated as a phase, which is why
+              it is the one that fails.</li>
+          </ul>
+          <p>Handover is a property of the system, not a stage of the project.</p>
+
+          <h3>How to actually do it</h3>
+          <ul>
+            <li><b>Their engineer deploys on day one.</b> Not at the end. The first release to any
+              environment should be performed by someone from the client's team, with us watching.
+              Everything that makes that impossible is a problem to fix now rather than later.</li>
+            <li><b>Documentation is validated by use, not by writing.</b> A runbook is correct when
+              somebody who has not seen it follows it successfully. Have them do exactly that, and
+              fix what they trip on.</li>
+            <li><b>Give them an incident, deliberately.</b> Mid-engagement, when something breaks,
+              the client's engineer leads the response and we sit behind them. The single most
+              informative test available — and far better run while we are still there.</li>
+            <li><b>Write down the decisions, not just the code.</b> A short record of each
+              significant choice — what we picked, what we rejected, and why — is the part that
+              does not survive otherwise, and it is cheap to produce at the time.</li>
+            <li><b>Prefer their stack over the optimal one.</b> A slightly worse technology their
+              team already operates beats a better one they have never seen. Usually the largest
+              single architectural consequence of designing for handover, and almost always the
+              right trade.</li>
+            <li><b>Apply the two-week test.</b> If our whole team disappeared for a fortnight, does
+              the system keep running, and can a change still ship? Ask it monthly. The answer is
+              the true measure of progress.</li>
+          </ul>
+
+          <h3>What it costs us</h3>
+          <p>Honesty requires stating the commercial side. It is slower at the start — writing
+            decisions down, automating the deploy before it is strictly needed, pairing rather than
+            just doing it, all cost time in the early weeks.</p>
+          <p>It also forgoes lock-in. A client who can run the system without us can also choose
+            not to call us. That is the point, and it does reduce a certain kind of recurring
+            revenue.</p>
+          <p>What it produces instead is better work. Clients who can run what they own come back
+            for the next problem rather than for maintenance of the last one — and the next problem
+            is more interesting and more valuable than the maintenance. It also removes an
+            objection at the point of sale: a buyer who fears dependency buys less, buys later, and
+            buys with a smaller scope.</p>
+          <p class="why">We would rather be invited back than needed.</p>
+
+          <h3>The architecture it produces</h3>
+          <p>The systems that come out of this discipline share recognisable traits:</p>
+          <ul>
+            <li><b>Boring technology, chosen deliberately.</b> Conventional tools, in conventional
+              arrangements, for the specific reason that other people already know them.</li>
+            <li><b>A smaller surface area.</b> Every moving part is something a person must learn,
+              which is a real cost, which makes you delete things.</li>
+            <li><b>Explicit over implicit.</b> Convention is only free when it is the
+              <em>receiving team's</em> convention. Otherwise it is a secret.</li>
+            <li><b>Observable by design.</b> Because someone unfamiliar has to diagnose it, not
+              because a monitoring policy required it.</li>
+            <li><b>Tests as specification.</b> The receiving team's licence to change things.
+              Without them, handover produces a system nobody dares touch — which is not ownership,
+              it is custody.</li>
+            <li><b>Recorded decisions.</b> So that inherited constraints can be distinguished from
+              arbitrary ones.</li>
+          </ul>
+
+          <h3>What "done" means</h3>
+          <p>Not <em>it works in production</em>.</p>
+          <p class="why"><b>Done is: their team shipped a change to it, without us, and we
+            watched.</b></p>
+          <p>That is the acceptance criterion, and it is worth writing into the engagement.
+            Anything short of it means the system is still on loan, regardless of what the status
+            report says.</p>
+
+          <h3>Conclusion</h3>
+          <p>Designing an engagement for handover is not generosity, and framing it that way
+            undersells it. It is the most reliable way we know to find out whether what we built is
+            actually any good.</p>
+          <p>A system that cannot be handed over is one that has not finished being understood —
+            its complexity is still being absorbed by the people who wrote it rather than resolved
+            in the design. Making someone else run it is how you find that out, and doing so at the
+            end is how you find it out too late.</p>
+          <p>Build it so they can run it without you. The architecture improves because of the
+            constraint, not despite it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates researches, designs, develops and implements production software and AI systems — and designs the engagement so your team can run them.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>Could your team run it tomorrow?</h2>
+          <p>If the honest answer is no, that is worth knowing now rather than at the end of the
+             engagement.</p>
+        </div>
+        <button type="button" class="btn" data-goto="approach">See the method</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================== WHITE PAPER: AGENTS ==================== -->
+  <!-- Reached from the blog's Agents card (data-goto="agents").
+       Source of truth: white-paper/agents-that-act-not-just-summarize.md. -->
+  <div class="view" id="view-agents" role="tabpanel">
+    <div class="print-footer" aria-hidden="true">Riverton &amp; Associates, Inc. · Agents that act, not agents that summarize</div>
+    <header class="lead">
+      <div class="wrap">
+        <button type="button" class="backlink" data-back="blog">← Back to blog</button>
+        <div class="eyebrow">White paper</div>
+        <h1>Agents that act, <span class="hl">not agents that summarize.</span></h1>
+        <p class="lede kicker" style="max-width:82ch">A summary is a <strong>demo</strong>. An
+          agent earns its place when it can take an action inside a system of record and be
+          <strong>held to the result</strong>.</p>
+        <p class="byline">Riverton &amp; Associates, Inc. · 6 April 2026 · <a class="pdf-link" href="white-paper/pdf/agents-that-act-not-just-summarize.pdf" download>Download PDF</a></p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="paper">
+          <h3>Executive summary</h3>
+          <p>Most systems currently described as agents retrieve information, interpret it, and
+            produce text. A person then reads that text and does the actual work. That is a useful
+            assistant. It is not an agent, and the distinction is not pedantic — it is the
+            difference between a system that demonstrates well and a system that changes a number
+            somebody is accountable for.</p>
+          <p class="why">The bar we hold to is specific: <b>an agent takes an action inside a
+            system of record, and somebody can be held to the outcome.</b> Everything difficult
+            about building one lives on the far side of that line, and nothing on the near side
+            prepares you for it.</p>
+          <p>This paper is about what changes when a system stops describing the world and starts
+            altering it: authority, reversibility, partial failure, audit, and the competence to
+            decline.</p>
+
+          <h3>Why summaries demo so well</h3>
+          <p>A summarization demo is impressive in almost exact inverse proportion to what is at
+            stake.</p>
+          <p>Nothing happened. No state changed, so there is nothing to reconcile, nothing to roll
+            back, nobody to notify, and no audit trail to produce. The failure mode is a paragraph
+            somebody disagrees with. The demo is safe because it is inert.</p>
+          <p>There is a second, subtler reason these demos flatter: summarization has no ground
+            truth. A wrong summary looks exactly like a right one. It is fluent, plausible, and
+            nobody in the room has read the underlying two hundred pages closely enough to catch
+            the omission. Compare that to an agent that issues a credit note for the wrong amount —
+            that failure announces itself, to someone, in a way nobody can talk around.</p>
+          <p>This is why pilots stall. The demo cleared a bar that had been set low by the absence
+            of consequences, and the production version has to clear a different bar entirely.</p>
+
+          <h3>What changes the moment it acts</h3>
+          <p>Everything the demo omitted arrives at once, and none of it is model work.</p>
+          <ul>
+            <li><b>Authority.</b> On whose behalf is this acting, under what delegated limit? An
+              agent inherits a permission set, and if that set is "whatever the service account can
+              do", the blast radius is the whole system.</li>
+            <li><b>Idempotency.</b> Networks retry. Queues redeliver. Somebody clicks twice. If the
+              action is not idempotent, the second execution creates a duplicate payment, ticket or
+              order — and it will happen.</li>
+            <li><b>Reversibility.</b> Can this be undone, by whom, and within what window? Actions
+              divide sharply into reversible and not, and that division should drive how much
+              autonomy each is given.</li>
+            <li><b>Partial failure.</b> It completed steps one through three of five and then the
+              API returned a 500. The world is now in a state no one designed. Multi-step actions
+              need explicit compensation, or they need to not be multi-step.</li>
+            <li><b>Audit.</b> Months later somebody asks why this record was changed. The answer
+              has to be specific: which action, on what evidence, under which rule, at whose
+              authority. "The model decided to" does not survive contact with a regulator or a
+              customer.</li>
+            <li><b>Reconciliation.</b> The system of record now disagrees with three other systems
+              that were not told. Something has to close that gap.</li>
+          </ul>
+          <p>None of these are improved by a better model. They are systems engineering, and they
+            are where the actual work is.</p>
+
+          <h3>What "held to the result" requires</h3>
+          <p>The second half of the claim is the harder one. Accountability is what separates an
+            agent from a suggestion engine, and it has concrete prerequisites.</p>
+          <ul>
+            <li><b>A named owner.</b> A person accountable for the decisions the agent makes, in
+              the same way they would be for a team member's. If nobody owns the outcome, nobody
+              will investigate a bad one.</li>
+            <li><b>A measurable outcome, in business terms.</b> Not "hours saved" and not "queries
+              answered" — the number the process exists to move. Activity metrics are how agent
+              programmes avoid being evaluated.</li>
+            <li><b>A justification attached to every action.</b> Not a log line saying what
+              happened, but a record of why: the evidence considered, the rule or threshold
+              applied, the confidence.</li>
+            <li><b>An escalation path.</b> Somewhere for the agent to go when it should not
+              proceed, staffed by someone who will actually look.</li>
+            <li><b>A control group.</b> Otherwise any change in the outcome can be attributed to
+              the agent, and it usually will be.</li>
+          </ul>
+          <p>If those five are not in place, the system may still be useful — but nobody is being
+            held to anything, and its value is an assertion rather than a measurement.</p>
+
+          <h3>The competence boundary</h3>
+          <p>The most important capability an acting agent has is knowing when not to act.</p>
+          <p>An agent that acts on everything is more dangerous than one that acts on sixty per
+            cent and escalates the rest, because the sixty per cent it handles well tells you
+            nothing about the forty per cent it should never have touched. Coverage is a poor
+            target; <b>coverage at an acceptable error rate</b> is the real one.</p>
+          <p>That requires a calibrated sense of its own confidence, an explicit threshold below
+            which it declines, and an escalation treated as a correct outcome rather than a
+            failure. Teams that measure "percentage handled autonomously" will tune that threshold
+            in exactly the wrong direction.</p>
+          <p>The related discipline is the cost asymmetry: how much worse is acting wrongly than
+            not acting at all? For a reversible, low-value action the answer may be "barely". For a
+            payment, a customer communication, or anything touching a regulated record, the answer
+            is "enormously" — and the threshold should reflect that rather than a default.</p>
+
+          <h3>The decision does not belong inside the model</h3>
+          <p>The architecture that survives production separates interpretation from execution.</p>
+          <p><b>The model interprets.</b> It reads the messy input, works out what is being asked,
+            and proposes an action. This is what it is genuinely good at.</p>
+          <p><b>A deterministic layer executes.</b> Actions are explicit, typed, individually
+            permissioned tools — not free-form access to an API surface. Preconditions are checked
+            in code before anything runs. Limits are enforced outside the model, where they cannot
+            be argued with. Every execution writes its own audit record.</p>
+          <p class="why">The model proposes; the deterministic layer disposes. This is the same
+            division that makes expert systems durable, arriving in a modern context: the component
+            that decides is inspectable, testable, and unable to invent a capability it does not
+            have.</p>
+          <p>Practically, that means an agent should not have credentials. It should have a small
+            set of narrow tools that have credentials, each of which validates its own
+            preconditions and refuses outside them.</p>
+
+          <h3>How to start</h3>
+          <ul>
+            <li><b>Pick one action, not a workflow.</b> Workflows are where multi-step partial
+              failure lives. A single, well-chosen action delivers value and teaches you what your
+              systems actually do under automation.</li>
+            <li><b>Run it in shadow first.</b> The agent proposes, a person executes, and you
+              measure agreement. This gives a real precision number before anything is at risk, and
+              surfaces the cases nobody anticipated.</li>
+            <li><b>Graduate on a bounded slice.</b> Let it act autonomously where the action is
+              reversible and the value is low. Keep the caps low enough that a bad week is an
+              inconvenience.</li>
+            <li><b>Widen by evidence.</b> Expand scope when the reversal rate justifies it, not
+              when the roadmap says so. This is the discipline most programmes lack.</li>
+            <li><b>Keep a human where the asymmetry demands one.</b> Not everywhere, and not
+              nowhere — where the cost of acting wrongly is much larger than the cost of
+              waiting.</li>
+          </ul>
+
+          <h3>How to tell whether it is working</h3>
+          <ul>
+            <li><b>Reversal rate.</b> The share of autonomous actions later corrected or undone.
+              The precision measure that matters, and the one to report.</li>
+            <li><b>Escalation rate, and its trend.</b> Falling escalation with a stable reversal
+              rate is genuine progress. Falling escalation with a rising reversal rate is a
+              threshold set too loosely.</li>
+            <li><b>Time to detect a bad action.</b> If it is measured in months, the audit trail is
+              not doing its job.</li>
+            <li><b>The business outcome against the control group.</b> The only measure that
+              answers the question the project was funded to answer.</li>
+            <li><b>Not</b> actions taken, queries answered, or hours notionally saved. Those go up
+              whether or not anything improved.</li>
+          </ul>
+
+          <h3>Conclusion</h3>
+          <p>A summary is a demo. It is genuinely useful, it is easy to build, and it commits to
+            nothing — which is exactly why it clears its bar so comfortably, and why so many of
+            them never become anything more.</p>
+          <p>An agent earns its place when it changes something real: a record altered, a payment
+            made, a case closed, a customer told. Everything hard about that is downstream of the
+            moment it acts — authority, idempotency, reversal, audit, and the judgement to stop.
+            None of it is model work, and all of it is the work.</p>
+          <p>Build the second thing. Then find out whether it was right, from a number, against a
+            control, with somebody's name on it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-top:0; padding-top:0">
+      <div class="wrap">
+        <div class="paper-about">
+          <p>Riverton &amp; Associates researches, designs, develops and implements production software and AI systems that take actions and are measured on them.</p>
+          <p class="who">Riverton &amp; Associates, Inc. · Austin, Texas · riverton-assoc.com</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta">
+      <div class="wrap cta-in">
+        <div>
+          <h2>What would yours be allowed to do?</h2>
+          <p>The useful place to start is one action, one owner, and a reversal rate you are
+             willing to publish.</p>
+        </div>
+        <button type="button" class="btn js-chat-open">Ask Rivet</button>
       </div>
     </div>
   </div>
@@ -1775,7 +3100,8 @@ function contactTel()     { return TEL_PARTS.join(''); }
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VIEWS = ['home','capabilities','approach','platform','bastionx','securetsi','blog',
-               'whitepaper','about'];
+               'whitepaper','vendor-names','expert-systems','rogue-it','wrong-number',
+               'handover','agents','about'];
   var PARTNER_VIEWS = ['platform','bastionx','securetsi'];
 
   /* ---------- tab routing ---------- */
@@ -1784,8 +3110,13 @@ function contactTel()     { return TEL_PARTS.join(''); }
       partnersMenu = document.getElementById('partners-menu'),
       ddItems      = Array.prototype.slice.call(document.querySelectorAll('.dd-item'));
   var currentView = 'home';
-  function show(name, push) {
+  /* Where the reader was in each view. Returning from a paper should land them
+     on the card they clicked, not at the top of the blog. Read before the views
+     switch, because changing them changes the page height under us. */
+  var scrollMem = {};
+  function show(name, push, restore) {
     if (VIEWS.indexOf(name) < 0) name = 'home';
+    if (name !== currentView) scrollMem[currentView] = window.scrollY;
     VIEWS.forEach(function (v) {
       document.getElementById('view-' + v).classList.toggle('active', v === name);
     });
@@ -1800,7 +3131,11 @@ function contactTel()     { return TEL_PARTS.join(''); }
     }
     if (push && location.hash !== '#' + name) history.pushState(null, '', '#' + name);
     currentView = name;
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    if (name === 'blog' && gridEl) fitGrid();   /* now measurable: the view is visible */
+    /* Going back is instant, like the browser's own back — smooth-scrolling a
+       thousand pixels to a remembered spot reads as a glitch, not a return. */
+    var y = restore ? (scrollMem[name] || 0) : 0;
+    window.scrollTo({ top: y, behavior: (restore || reduce) ? 'auto' : 'smooth' });
   }
   tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view, true); }); });
 
@@ -1819,7 +3154,9 @@ function contactTel()     { return TEL_PARTS.join(''); }
     home: 'Home', capabilities: 'Capabilities', approach: 'Approach',
     platform: 'CXO Nexus platform', bastionx: 'BastionX',
     securetsi: 'Secure Tech Solutions', blog: 'Blog', whitepaper: 'White paper',
-    about: 'About us'
+    'vendor-names': 'Vendor names', 'expert-systems': 'Expert systems',
+    'rogue-it': 'Rogue IT', 'wrong-number': 'Optimizing for the wrong number',
+    handover: 'Handing it over', agents: 'Agents that act', about: 'About us'
   };
   var MAIL_PROMPTS = ['Name:', 'Company:', 'Role:', 'Email:', 'Phone (optional):', '',
                       'What you would like help with:', '', ''];
@@ -1842,9 +3179,186 @@ function contactTel()     { return TEL_PARTS.join(''); }
     b.addEventListener('click', function () { window.location.href = 'tel:' + contactTel(); });
   });
 
-  document.querySelectorAll('[data-goto]').forEach(function (b) {
-    b.addEventListener('click', function () { show(b.dataset.goto, true); });
+  /* Delegated, not bound per element: the blog cards are generated, so anything
+     bound at load would miss them and miss every re-render after a search. */
+  document.addEventListener('click', function (e) {
+    if (!e.target || !e.target.closest) return;
+    var g = e.target.closest('[data-goto]');
+    if (g) { show(g.getAttribute('data-goto'), true); return; }
+    var b = e.target.closest('[data-back]');
+    if (b) show(b.getAttribute('data-back'), true, true);
   });
+
+  /* ---------- blog: the paper list ----------
+     One list drives both the featured panel and the grid, so publishing a paper
+     is a single entry here plus its view. Newest is featured; the next GRID_MAX
+     fill the grid. Past that the grid scrolls and a search box appears. */
+  var GRID_MAX = 6;
+  var PAPERS = [
+    { id: 'whitepaper', cat: 'White paper', date: '2026-08-31', read: '5 min read',
+      t: 'Maximizing AI and machine learning value',
+      x: "A practitioner's approach: frame the problem, establish the data, build the process, " +
+         "and prove it small before committing — then ten steps that decide whether an AI " +
+         "investment returns anything at all.",
+      pull: 'Set realistic accuracy expectations: perfection is not achievable. Prefer a ' +
+            'feasible solution to a theoretically better one.' },
+    { id: 'vendor-names', cat: 'Data engineering', date: '2026-06-02',
+      t: 'The vendor name problem',
+      x: 'One supplier, forty-three spellings, and a finance team certain they know their top ' +
+         'ten. Why entity resolution is the least glamorous and most valuable thing in the ' +
+         'pipeline.' },
+    { id: 'expert-systems', cat: 'Applied AI', date: '2026-05-19',
+      t: "Expert systems didn't go away",
+      x: 'Before the current wave, we captured how a thirty-year veteran made a judgement call ' +
+         'and ran it at scale. That pattern is still the highest-return AI most operations can ' +
+         'deploy.' },
+    { id: 'rogue-it', cat: 'Spend intelligence', date: '2026-04-28',
+      t: 'Rogue IT is a measurement problem',
+      x: 'Technology bought outside IT is not usually defiance. It is an expense line nobody ' +
+         'categorized, in a system nobody joined to the asset register.' },
+    { id: 'agents', cat: 'Agents', date: '2026-04-06',
+      t: 'Agents that act, not agents that summarize',
+      x: 'A summary is a demo. An agent earns its place when it can take an action inside a ' +
+         'system of record and be held to the result.' },
+    { id: 'wrong-number', cat: 'Model design', date: '2026-03-17',
+      t: 'Optimizing for the wrong number',
+      x: 'A model that wins on the metric and loses on the outcome is a common and expensive ' +
+         'result. Choosing what to optimize is a business decision, not a technical one.' },
+    { id: 'handover', cat: 'Practice', date: '2026-02-25',
+      t: 'Handing it over on purpose',
+      x: "Designing an engagement so the client's team can run the system without us — and why " +
+         'that produces better architecture than building it to keep.' }
+  ];
+
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+  function longDate(iso) {
+    var p = iso.split('-');
+    return (+p[2]) + ' ' + MONTHS[+p[1] - 1] + ' ' + p[0];
+  }
+
+  var featEl   = document.getElementById('blog-featured'),
+      gridEl   = document.getElementById('blog-grid'),
+      scrollEl = document.getElementById('blog-scroll'),
+      toolsEl  = document.getElementById('blog-tools'),
+      qEl      = document.getElementById('blog-q'),
+      countEl  = document.getElementById('blog-count'),
+      emptyEl  = document.getElementById('blog-empty');
+
+  /* mkEl, not el: a later var el in this same IIFE would clobber a
+     hoisted function of that name the moment the sector cycle runs. */
+  function mkEl(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+
+  function postmeta(p, withRead) {
+    var m = mkEl('div', 'postmeta');
+    m.appendChild(mkEl('span', 'cat', p.cat));
+    m.appendChild(mkEl('span', null, longDate(p.date)));
+    if (withRead && p.read) m.appendChild(mkEl('span', null, p.read));
+    return m;
+  }
+
+  function paperCard(p) {
+    var c = mkEl('div', 'cell post');
+    c.appendChild(postmeta(p));
+    c.appendChild(mkEl('h3', null, p.t));
+    c.appendChild(mkEl('p', null, p.x));
+    var b = mkEl('button', 'more', 'Read →');
+    b.type = 'button';
+    b.setAttribute('data-goto', p.id);
+    c.appendChild(b);
+    return c;
+  }
+
+  function featuredCard(p) {
+    var w = mkEl('div', 'lead-post');
+    var left = mkEl('div');
+    left.appendChild(postmeta(p, true));
+    left.appendChild(mkEl('h3', null, p.t));
+    left.appendChild(mkEl('p', null, p.x));
+    var b = mkEl('button', 'btn', 'Read the white paper');
+    b.type = 'button';
+    b.setAttribute('data-goto', p.id);
+    b.style.marginTop = '1.2rem';
+    left.appendChild(b);
+    w.appendChild(left);
+    if (p.pull) w.appendChild(mkEl('div', 'pull', p.pull));
+    return w;
+  }
+
+  /* .grid3 draws its lines by showing a line-coloured background through the
+     1px gaps, so a part-filled last row leaves a solid block of that colour.
+     Pad it out with empty cells. Column count comes from the computed style
+     because it changes at the breakpoints. */
+  function padGrid() {
+    var cols = getComputedStyle(gridEl).gridTemplateColumns.split(' ').length;
+    var n = gridEl.children.length;
+    if (!n || !cols) return;
+    var need = (cols - (n % cols)) % cols;
+    for (var i = 0; i < need; i++) gridEl.appendChild(mkEl('div', 'cell filler'));
+  }
+
+  /* Two rows visible, the rest scrolls. Measured rather than a fixed height,
+     because the column count changes at the grid's breakpoints. */
+  function fitGrid() {
+    scrollEl.style.maxHeight = '';
+    var kids = gridEl.children;
+    if (kids.length <= GRID_MAX) return;
+    var top = kids[0].getBoundingClientRect().top;
+    var bottom = kids[GRID_MAX - 1].getBoundingClientRect().bottom;
+    var h = Math.round(bottom - top);
+    /* A view that is not displayed measures zero. Clamping to that would hide
+       the grid entirely, so leave it unclamped and re-fit when blog is shown. */
+    if (h > 0) scrollEl.style.maxHeight = h + 'px';
+  }
+
+  function renderBlog() {
+    var q = (qEl.value || '').trim().toLowerCase();
+    var sorted = PAPERS.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var list;
+
+    /* A search covers every paper, so the featured one steps aside rather than
+       appearing in two places at once. */
+    if (q) {
+      list = sorted.filter(function (p) {
+        return (p.t + ' ' + p.x + ' ' + p.cat + ' ' + (p.pull || ''))
+                 .toLowerCase().indexOf(q) >= 0;
+      });
+    } else {
+      list = sorted.slice(1);
+    }
+
+    featEl.innerHTML = '';
+    featEl.hidden = !!q;
+    if (!q) featEl.appendChild(featuredCard(sorted[0]));
+
+    gridEl.innerHTML = '';
+    list.forEach(function (p) { gridEl.appendChild(paperCard(p)); });
+    emptyEl.hidden = list.length > 0;
+    countEl.textContent = q ? list.length + (list.length === 1 ? ' paper' : ' papers') : '';
+    padGrid();
+    fitGrid();
+  }
+
+  if (qEl) {
+    /* The search only earns its place once papers are hidden from view: with a
+       featured panel plus a full grid, nothing is out of reach yet. */
+    toolsEl.hidden = PAPERS.length <= GRID_MAX + 1;
+    qEl.addEventListener('input', renderBlog);
+    var fitPending = null;
+    window.addEventListener('resize', function () {
+      if (fitPending) return;
+      fitPending = requestAnimationFrame(function () {
+        fitPending = null;
+        renderBlog();          /* columns changed, so the padding changes too */
+      });
+    });
+    renderBlog();
+  }
 
   /* ---------- partners dropdown ---------- */
   function ddOpen(open) {
@@ -1879,7 +3393,9 @@ function contactTel()     { return TEL_PARTS.join(''); }
     window.addEventListener('resize', function () { if (!partnersMenu.hidden) ddOpen(false); });
   }
 
-  window.addEventListener('popstate', function () { show((location.hash || '#home').slice(1), false); });
+  window.addEventListener('popstate', function () {
+    show((location.hash || '#home').slice(1), false, true);   /* the browser's back, too */
+  });
   show((location.hash || '#home').slice(1), false);
 
   /* ---------- home: sector problem cycle ---------- */
