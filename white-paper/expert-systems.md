@@ -13,8 +13,8 @@ Riverton & Associates, Inc. · 19 May 2026
 
 Around twenty years ago we built an expert system with IBM for AK Steel. It encoded the
 judgement of a thirty-year veteran operator — decisions that had never been written down —
-and applied them on every shift rather than on the shifts he happened to work. It saved
-roughly $10 million a year.
+and applied them on every shift rather than on the shifts he happened to work. It has saved
+millions a year ever since.
 
 It is still running. It is still saving money.
 
@@ -53,7 +53,7 @@ An operation does not run at the level of its best operator. It runs at the aver
 everyone on every shift, including the new hire on nights and the stand-in during holidays.
 The gap between the best operator's judgement and the median decision made across a year is
 enormous, and it shows up as scrap, rework, downtime and lost throughput. Closing that gap —
-not exceeding the expert, just reaching him consistently — was worth about $10 million a year.
+not exceeding the expert, just reaching him consistently — has been worth millions a year.
 
 ## Why it lasted twenty years
 
@@ -169,8 +169,8 @@ now, and it does not reopen.
 
 **The cost profile is unusually favourable.** No labelling programme, no accelerator budget,
 no retraining schedule. The dominant cost is the expert's time, which is finite for reasons
-that have nothing to do with the project. Set against a $10 million annual saving that has
-compounded for twenty years, the economics are not close.
+that have nothing to do with the project. Set against savings in the millions each year,
+compounding for twenty years, the economics are not close.
 
 ## Conclusion
 
