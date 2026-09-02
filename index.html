@@ -86,10 +86,6 @@
   .tabs { display:flex; gap:.3rem; overflow-x:auto; scrollbar-width:none; flex:1 1 auto;
           min-width:0; }   /* min-width:0 lets the flex item shrink so overflow-x can engage */
   .tabs::-webkit-scrollbar { display:none }
-  .icon-actions.top { flex:none; padding:.25rem 0; }
-  .icon-btn.sm { width:32px; height:32px; }
-  .icon-btn.sm svg { width:15px; height:15px; }
-  .icon-btn.sm::after { bottom:auto; top:calc(100% + 8px); }
   .tab, .tab-trigger { font-family:var(--mono); font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
          color:var(--muted); background:none; border:0; border-bottom:2px solid transparent;
          padding:.7rem .85rem; cursor:pointer; white-space:nowrap; font-weight:600;
@@ -139,6 +135,14 @@
   .lead h1 { font-family:var(--serif); font-size:clamp(2.1rem,5vw,3.5rem); line-height:1.08;
              font-weight:600; letter-spacing:-.018em; margin:1rem 0 0; text-wrap:balance; }
   .lead h1 .hl { color:var(--accent); font-style:italic; }
+  /* Partner logo beside the headline. It wraps above on narrow screens rather
+     than squeezing the headline into a column too narrow to read. */
+  .hero-brand { display:flex; align-items:center; gap:clamp(1rem,2.6vw,2.2rem);
+                flex-wrap:wrap; margin-top:1.4rem; }
+  .hero-brand h1 { margin:0; flex:1 1 22ch; }
+  .hero-logo { flex:0 0 auto; display:block; line-height:0; }
+  .hero-logo img { display:block; width:clamp(150px,15vw,196px); height:auto; }
+  .hero-logo:hover { opacity:.78; }
   .lead .lede { margin:1.2rem 0 0; max-width:var(--measure); font-size:1.05rem; color:var(--muted); }
   .lead .lede + .lede { margin-top:.85rem; }
   /* A hero that opens on a claim rather than a description: the first lede is
@@ -270,6 +274,54 @@
 
   /* Shared partner-page furniture. .bx-* names are kept as aliases so the existing
      BastionX markup keeps working; new partner views use the .pt-* names. */
+  /* The CXO Nexus asset is a square mark with no wordmark, so the name is set
+     beside it rather than faked as part of the image. */
+  /* Restored from commit 2d0deb1. The email icon sits beside Book a call —
+     the button is the primary action, the icon the quiet alternative for
+     anyone who would rather write than book. */
+  /* Email icon, the call to action, then chat — one flex group so the row
+     stays together when the button hides below 760px. */
+  .nav-actions { display:flex; align-items:center; gap:.7rem; margin-left:auto; }
+  .nav-top .icon-actions { flex:none; }
+  .icon-actions { display:inline-flex; align-items:center; gap:.55rem; }
+  .icon-btn { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+
+              border:1px solid var(--line-2); background:transparent; color:var(--accent);
+
+              cursor:pointer; padding:0; position:relative;
+
+              transition:background .16s ease, border-color .16s ease, color .16s ease; }
+  .icon-btn svg { width:16px; height:16px; }
+  .icon-btn:hover { background:var(--accent); border-color:var(--accent); color:#FFF7F4; }
+  .icon-btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .icon-btn::after {
+
+    content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%;
+
+    transform:translateX(-50%); white-space:nowrap;
+
+    font-family:var(--mono); font-size:.66rem; letter-spacing:.06em;
+
+    color:var(--ink); background:var(--raised); border:1px solid var(--line-2);
+
+    padding:.32rem .55rem; opacity:0; pointer-events:none; transition:opacity .16s ease;
+
+  }
+  .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity:1; }
+  .icon-btn.sm { width:32px; height:32px; }
+  .icon-btn.sm svg { width:15px; height:15px; }
+  .icon-btn.sm::after { bottom:auto; top:calc(100% + 8px); }
+
+  .partner-logo { display:inline-flex; align-items:center; gap:.7rem; justify-self:start;
+                  text-decoration:none; border:1px solid var(--accent);
+                  padding:.5rem .75rem; transition:background .18s ease; }
+  .partner-logo img { display:block; width:36px; height:36px; }
+  .partner-logo span { font-family:var(--mono); font-size:.6rem; letter-spacing:.15em;
+                       text-transform:uppercase; color:var(--accent); line-height:1.6; }
+  .partner-logo span b { font-weight:700; }
+  .partner-logo:hover { background:color-mix(in srgb, var(--accent) 8%, transparent); }
+  .cta-acts { display:flex; flex-wrap:wrap; gap:.7rem; align-items:center; }
+
   .pt-logochip, .bx-logochip {
                  display:inline-flex; align-items:center; background:#fff; border:1px solid var(--line-2);
                  border-radius:12px; padding:.95rem 1.2rem; box-shadow:0 6px 20px rgba(0,0,0,.10); }
@@ -343,22 +395,6 @@
   a.contact-item:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 
   /* icon-only actions */
-  .icon-actions { display:inline-flex; align-items:center; gap:.55rem; }
-  .icon-btn { width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
-              border:1px solid var(--line-2); background:transparent; color:var(--accent);
-              cursor:pointer; padding:0; position:relative;
-              transition:background .16s ease, border-color .16s ease, color .16s ease; }
-  .icon-btn svg { width:16px; height:16px; }
-  .icon-btn:hover { background:var(--accent); border-color:var(--accent); color:#FFF7F4; }
-  .icon-btn:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-  .icon-btn::after {
-    content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%;
-    transform:translateX(-50%); white-space:nowrap;
-    font-family:var(--mono); font-size:.66rem; letter-spacing:.06em;
-    color:var(--ink); background:var(--raised); border:1px solid var(--line-2);
-    padding:.32rem .55rem; opacity:0; pointer-events:none; transition:opacity .16s ease;
-  }
-  .icon-btn:hover::after, .icon-btn:focus-visible::after { opacity:1; }
 
   /* Rivet — agent avatar */
   .avatar { width:38px; height:38px; flex:none; }
@@ -501,6 +537,25 @@
   .blog-q:focus { outline:2px solid var(--accent); outline-offset:1px; }
   .blog-count { font-family:var(--mono); font-size:.7rem; color:var(--faint); white-space:nowrap; }
   .blog-scroll { overflow-y:auto; }
+
+  /* Contact block on About — the page people go to looking for you. */
+  .contact-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+                  background:var(--line); border:1px solid var(--line); }
+  @media (max-width:900px){ .contact-grid { grid-template-columns:1fr } }
+  .contact-card p { font-size:.88rem; }
+  .contact-acts { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:auto; padding-top:1rem; }
+  .contact-acts .btn { font-size:.66rem; padding:.5rem .8rem; }
+  .contact-note { color:var(--faint); font-size:.8rem !important; margin-top:.6rem; }
+
+  /* Rivet is scripted and, until CAPTURE_ENDPOINT is set, cannot deliver a
+     message on its own. The way out has to be visible from the start rather
+     than offered after a send that did not work. */
+  .chatdock-alt { padding:.5rem .9rem 0; }
+  .chat-mail { background:none; border:0; padding:0; cursor:pointer; font:inherit;
+               font-family:var(--mono); font-size:.7rem; letter-spacing:.06em;
+               color:var(--accent); border-bottom:1px solid currentColor; }
+  .chat-mail:hover { color:var(--accent-d); }
+  .chatdock-alt .chat-mail { font-size:.68rem; }
   .cell.filler { pointer-events:none; }
 
   /* ---------- print: the papers as documents ----------
@@ -514,7 +569,7 @@
     /* footer.site, not .foot — .foot only ever appears as .foot-in on a child,
        so hiding it missed the real page footer and the street address printed
        under the paper's own closing block. */
-    .nav, .cta, footer.site, .chatdock, .backlink, .icon-actions,
+    .nav, .cta, footer.site, .chatdock, .backlink,
     .dd-menu, .blog-tools { display:none !important; }
     .view { display:none !important; }
     .view.active { display:block !important; animation:none !important; }
@@ -576,7 +631,7 @@
   @media (pointer: coarse), (max-width: 760px) {
     .icon-btn, .icon-btn.sm { width:44px; height:44px; }
     .icon-btn.sm svg { width:17px; height:17px; }
-    .tab, .tab-trigger { padding-top:.85rem; padding-bottom:.85rem; }
+      .tab, .tab-trigger { padding-top:.85rem; padding-bottom:.85rem; }
     .chatform input { padding:.8rem .7rem; }
     .chatform button { min-width:48px; justify-content:center; }
     .chip { padding:.6rem .75rem; }
@@ -597,7 +652,17 @@
         <span class="mono-badge">R<em>&amp;</em>A</span>
         <span class="wordmark">RIVERTON <em>&amp;</em> ASSOCIATES, INC.</span>
       </div>
-      <button type="button" class="btn js-chat-open">Start a conversation</button>
+      <span class="nav-actions">
+        <span class="icon-actions top">
+          <button type="button" class="icon-btn sm" data-mail="short" data-tip="Email us"
+                  aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></button>
+        </span>
+        <button type="button" class="btn js-book">Book a call</button>
+        <span class="icon-actions top">
+          <button type="button" class="icon-btn sm js-chat-open" data-tip="Chat with Rivet"
+                  aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg></button>
+        </span>
+      </span>
     </div>
     <div class="tabrow">
       <div class="tabs" role="tablist" aria-label="Sections">
@@ -612,14 +677,6 @@
         <button class="tab" role="tab" data-view="blog"        aria-selected="false">Blog</button>
         <button class="tab" role="tab" data-view="about"       aria-selected="false">About Us</button>
       </div>
-      <span class="icon-actions top">
-        <button type="button" class="icon-btn sm" data-tel data-tip="Call us"
-                aria-label="Call Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg></button>
-        <button type="button" class="icon-btn sm" data-mail="short" data-tip="Email us"
-                aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></button>
-        <button type="button" class="icon-btn sm js-chat-open" data-tip="Chat with Rivet"
-                aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg></button>
-      </span>
     </div>
   </nav>
 
@@ -641,7 +698,7 @@
             <button class="btn ghost" data-goto="capabilities">Our capabilities</button>
           </div>
           <div class="stats">
-            <div class="stat"><div class="k">$10M</div><div class="l">Annual saving, IBM&nbsp;/ AK Steel expert system</div></div>
+            <div class="stat"><div class="k">Millions</div><div class="l">Saved annually, IBM&nbsp;/ AK Steel expert system</div></div>
             <div class="stat"><div class="k">5</div><div class="l">Enterprise systems delivered into production</div></div>
             <div class="stat"><div class="k">3</div><div class="l">Sectors of deep domain practice</div></div>
           </div>
@@ -674,7 +731,7 @@
           changed a number somebody was accountable for.</p>
         <div class="grid3">
           <div class="cell result">
-            <span class="metric">$10M saved annually</span>
+            <span class="metric">Millions saved annually</span>
             <span class="n">IBM / AK Steel</span>
             <p>An AI expert system that emulated the judgement of a 30-year veteran operator,
                holding the line on decisions that had never been written down.</p>
@@ -1029,7 +1086,12 @@
     <header class="lead">
       <div class="wrap">
         <div class="eyebrow">Implementation partner — CXO Nexus spend analytics platform</div>
-        <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+        <div class="hero-brand">
+          <a class="hero-logo" href="https://www.cxonexus.com" target="_blank" rel="noopener"
+             aria-label="Visit cxonexus.com"><img src="cxonexus-logo.png" alt="CXO Nexus"
+             width="330" height="74"></a>
+          <h1>Spend visibility, <span class="hl">implemented properly.</span></h1>
+        </div>
         <p class="lede kicker" style="max-width:82ch">CXO Nexus is the industry leader in
           <strong>line-item-level spend analytics</strong>, with <strong>nearly a decade in the
           field</strong>.</p>
@@ -1071,7 +1133,11 @@
           </div>
 
           <div class="partner hero-partner">
-            <div class="badge">Platform by<br>CXO&nbsp;Nexus</div>
+            <a class="partner-logo" href="https://www.cxonexus.com" target="_blank"
+               rel="noopener" aria-label="Visit cxonexus.com">
+              <img src="cxonexus-mark.png" alt="CXO Nexus" width="36" height="36">
+              <span>Platform by<br><b>CXO&nbsp;Nexus</b></span>
+            </a>
             <p>The platform, its models, and its patented spend-management innovations are built
               and owned by CXO Nexus.
               <em>Riverton's role is implementation partner — onboarding, source-system
@@ -1179,7 +1245,11 @@
           <p>Send a representative sample and we will run it through resolution and show you what
              your spend actually looks like — before any commitment.</p>
         </div>
-        <button type="button" class="btn" data-mail="conversation">Email us a sample</button>
+        <div class="cta-acts">
+          <button type="button" class="btn" data-mail="conversation">Email us a sample</button>
+          <a class="btn ghost" href="https://www.cxonexus.com" target="_blank"
+             rel="noopener">cxonexus.com</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1914,7 +1984,7 @@
           <p>Around twenty years ago we built an expert system with IBM for AK Steel. It encoded
             the judgement of a thirty-year veteran operator — decisions that had never been written
             down — and applied them on every shift rather than on the shifts he happened to work.
-            It saved roughly $10 million a year.</p>
+            It has saved millions a year ever since.</p>
           <p><b>It is still running. It is still saving money.</b></p>
           <p>That fact deserves more attention than it usually gets. In an industry where a
             production model is doing well to survive eighteen months before drift forces a
@@ -1949,7 +2019,7 @@
             holidays. The gap between the best operator's judgement and the median decision made
             across a year is enormous, and it shows up as scrap, rework, downtime and lost
             throughput. Closing that gap — not exceeding the expert, just reaching him
-            consistently — was worth about $10 million a year.</p>
+            consistently — has been worth millions a year.</p>
 
           <h3>Why it lasted twenty years</h3>
           <p>The longevity is the part that should change how people think about this.</p>
@@ -2928,7 +2998,7 @@
           <div class="tr-row">
             <div class="org">IBM / AK Steel</div>
             <div class="what">AI expert system that emulated the judgement of a 30-year veteran
-              operator, saving <strong>$10 million annually</strong>.</div>
+              operator, saving <strong>millions annually</strong>.</div>
           </div>
           <div class="tr-row">
             <div class="org">Alight Solutions</div>
@@ -2975,6 +3045,45 @@
         </div>
       </div>
     </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head"><h2>Contact us</h2></div>
+        <p class="sec-lede">Tell us what you are trying to solve. We answer within one business
+          day.</p>
+
+        <div class="contact-grid">
+          <div class="cell contact-card">
+            <span class="n">Talk to us</span>
+            <h3>Start a conversation</h3>
+            <p>Bring us a business challenge and we will come back with a view on whether it is
+               worth building — including when the answer is no.</p>
+            <div class="contact-acts">
+              <button type="button" class="btn" data-mail="short">Email us</button>
+              <button type="button" class="btn ghost js-chat-open">Ask Rivet</button>
+            </div>
+          </div>
+
+          <div class="cell contact-card">
+            <span class="n">Direct</span>
+            <h3>Phone and email</h3>
+            <p>If you would rather not write it down, call. Either reaches the same people.</p>
+            <div class="contact-acts">
+              <button type="button" class="btn ghost" data-tel>Call us</button>
+              <button type="button" class="btn ghost" data-mail="short">Email us</button>
+            </div>
+          </div>
+
+          <div class="cell contact-card">
+            <span class="n">Where we are</span>
+            <h3>Riverton &amp; Associates, Inc.</h3>
+            <p>2605 Dupree Circle<br>Austin, TX 78748<br>United States</p>
+            <p class="contact-note">Working with clients across regulated and operationally
+              demanding industries.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <footer class="site">
@@ -2984,20 +3093,6 @@
         <span class="contact-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10.4c0 5.6-8 11.6-8 11.6s-8-6-8-11.6a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10.2" r="2.9"/></svg>
           2605 Dupree Circle, Austin TX 78748
-        </span>
-        <span class="icon-actions">
-          <button type="button" class="icon-btn" data-tel data-tip="Call us"
-                  aria-label="Call Riverton and Associates">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.8 16.9v2.9a2 2 0 0 1-2.2 2 19.6 19.6 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.6 19.6 0 0 1-3-8.6A2 2 0 0 1 4 2h2.9a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.1-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z"/></svg>
-          </button>
-          <button type="button" class="icon-btn" data-mail="short" data-tip="Email us"
-                  aria-label="Email Riverton and Associates">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg>
-          </button>
-          <button type="button" class="icon-btn js-chat-open" data-tip="Chat with Rivet"
-                  aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
-          </button>
         </span>
       </span>
       <span class="rights">Bring Data To Life</span>
@@ -3021,6 +3116,9 @@
       </div>
       <button class="x" id="chat-close" aria-label="Close chat">&times;</button>
     </div>
+    <div class="chatdock-alt">
+      <button type="button" class="chat-mail" data-mail="conversation">Email us instead</button>
+    </div>
     <div class="chatdock-body" id="chat-log" aria-live="polite"></div>
     <div class="chips" id="chat-chips"></div>
     <form class="chatform" id="chat-form">
@@ -3032,8 +3130,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
       </button>
     </form>
-    <div class="chatnote" id="chat-note">Replies are scripted — anything you type reaches a
-      person.</div>
+    <div class="chatnote" id="chat-note">Replies are scripted. To reach a person, use
+      <button type="button" class="chat-mail" data-mail="conversation">email</button> —
+      we answer within one business day.</div>
   </div>
 </div>
 
@@ -3074,6 +3173,14 @@
    nothing a visitor writes is ever silently dropped.
    ==================================================================== */
 var CAPTURE_ENDPOINT = '';
+
+/* ====================================================================
+   BOOK A CALL — paste the scheduler link here and the header button starts
+   opening it, e.g. 'https://cal.com/barrington/30min'.
+   While it is empty the button falls back to the contact block on About,
+   so it always leads somewhere real rather than nowhere.
+   ==================================================================== */
+var BOOKING_URL = 'https://calendly.com/barrington-young/15min';
 
 /* ====================================================================
    CONTACT DETAILS -- kept in pieces on purpose.
@@ -3183,6 +3290,18 @@ function contactTel()     { return TEL_PARTS.join(''); }
      bound at load would miss them and miss every re-render after a search. */
   document.addEventListener('click', function (e) {
     if (!e.target || !e.target.closest) return;
+
+    /* Book a call. Until BOOKING_URL is set, send them to the contact block on
+       About rather than to a button that does nothing. */
+    var bk = e.target.closest('.js-book');
+    if (bk) {
+      if (BOOKING_URL) { window.open(BOOKING_URL, '_blank', 'noopener'); return; }
+      show('about', true);
+      var c = document.querySelector('#view-about .contact-grid');
+      if (c) setTimeout(function () { c.scrollIntoView({ block: 'start' }); }, 60);
+      return;
+    }
+
     var g = e.target.closest('[data-goto]');
     if (g) { show(g.getAttribute('data-goto'), true); return; }
     var b = e.target.closest('[data-back]');
@@ -3411,7 +3530,7 @@ function contactTel()     { return TEL_PARTS.join(''); }
     { s:'Manufacturing',
       p:'Production routing and scheduling are set by convention, leaving capacity unused and downtime absorbed as a cost of doing business.',
       y:'Optimization models over routing and scheduling, fed by live plant data and retrained as the line changes.',
-      o:'Higher throughput and reduced downtime — the pattern behind a $10M annual saving at AK Steel.' }
+      o:'Higher throughput and reduced downtime — the pattern behind millions in annual savings at AK Steel.' }
   ];
   var si = 0;
   var el = { s:document.getElementById('p-sector'), p:document.getElementById('p-problem'),
@@ -3485,7 +3604,7 @@ function contactTel()     { return TEL_PARTS.join(''); }
 
   var SCRIPT = [
     ['What do you actually build?',
-     'Production systems — data pipelines, models, and the architecture around them. Recent work includes an expert system at AK Steel that saved $10M a year, and behavioral fraud detection at USAA that scores deviation instead of matching rules.'],
+     'Production systems — data pipelines, models, and the architecture around them. Recent work includes an expert system at AK Steel that has saved millions a year, and behavioral fraud detection at USAA that scores deviation instead of matching rules.'],
     ['How do you approach a new problem?',
      'Eight steps, in order, starting with defining a measurable business problem before any modeling happens. Skipping that step is the most common reason AI programs fail. The full method is on the Approach tab.'],
     ['What does the spend platform find?',
