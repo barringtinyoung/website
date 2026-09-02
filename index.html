@@ -551,6 +551,17 @@
      message on its own. The way out has to be visible from the start rather
      than offered after a send that did not work. */
   .chatdock-alt { padding:.5rem .9rem 0; }
+  .cm .offer { display:flex; gap:.5rem; margin-top:.7rem; flex-wrap:wrap; }
+  .offer-btn { font-family:var(--mono); font-size:.64rem; letter-spacing:.08em;
+               text-transform:uppercase; padding:.45rem .7rem; cursor:pointer;
+               border:1px solid var(--accent); background:var(--accent); color:#FFF7F4; }
+  .offer-btn.ghost { background:transparent; color:var(--accent); }
+  .offer-btn:hover { background:var(--accent-d); border-color:var(--accent-d); color:#FFF7F4; }
+  .cm .src { margin-top:.45rem; font-family:var(--mono); font-size:.62rem;
+             letter-spacing:.04em; color:var(--faint); }
+  .srclink { background:none; border:0; padding:0; font:inherit; cursor:pointer;
+             color:var(--accent); border-bottom:1px solid currentColor; }
+  .srclink:hover { color:var(--accent-d); }
   .chat-mail { background:none; border:0; padding:0; cursor:pointer; font:inherit;
                font-family:var(--mono); font-size:.7rem; letter-spacing:.06em;
                color:var(--accent); border-bottom:1px solid currentColor; }
@@ -3130,7 +3141,8 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
       </button>
     </form>
-    <div class="chatnote" id="chat-note">Replies are scripted. To reach a person, use
+    <div class="chatnote" id="chat-note">Answers come from this site and its white papers only.
+      To reach a person, use
       <button type="button" class="chat-mail" data-mail="conversation">email</button> —
       we answer within one business day.</div>
   </div>
@@ -3279,11 +3291,16 @@ function contactTel()     { return TEL_PARTS.join(''); }
            '&body='    + encodeURIComponent(body.join('\r\n'));
   }
 
-  document.querySelectorAll('[data-mail]').forEach(function (b) {
-    b.addEventListener('click', function () { window.location.href = mailHref(b.dataset.mail); });
-  });
-  document.querySelectorAll('[data-tel]').forEach(function (b) {
-    b.addEventListener('click', function () { window.location.href = 'tel:' + contactTel(); });
+  /* Delegated: Rivet creates an Email us control at runtime when it cannot
+     answer, and anything bound at load would miss it. */
+  document.addEventListener('click', function (e) {
+    if (!e.target || !e.target.closest) return;
+    if (e.target.closest('.js-offer-call')) { awaitingOffer = false; goBooking(); return; }
+    if (e.target.closest('.js-offer-mail')) { awaitingOffer = false; emailWithTranscript(); return; }
+    var m = e.target.closest('[data-mail]');
+    if (m) { window.location.href = mailHref(m.getAttribute('data-mail')); return; }
+    var t = e.target.closest('[data-tel]');
+    if (t) { window.location.href = 'tel:' + contactTel(); }
   });
 
   /* Delegated, not bound per element: the blog cards are generated, so anything
@@ -3695,6 +3712,284 @@ function contactTel()     { return TEL_PARTS.join(''); }
     });
   }
 
+  /* ---------- retrieval: answers come from this site and nothing else ----------
+     The corpus is the page itself. Every view already lives in the DOM, so the
+     index is built from it on first use: no build step, no file to deploy, and
+     it cannot drift from what is published.
+
+     There is no model here and nothing is generated. The reply is the site's
+     own words, quoted, with a link to where they came from — which is why it
+     cannot invent a claim about the practice. Generation, if it comes later,
+     belongs behind an endpoint that holds the key, not in this file. */
+
+  /* Retrieval matches words, not meaning. "Do you sell insurance" scored a
+     passage about insurance *clients* and read as a yes — and a confidently
+     wrong answer about what the firm sells is worse than no answer at all.
+     These rules intercept that class of question before the index is consulted.
+     Order matters: the capability rules run first, so a question about spend
+     software is not caught by the sector rules below it.
+     Add a pattern here whenever retrieval gives a misleading reading. */
+  var SERVICES = 'We provide software and analysis services — data engineering, advanced ' +
+                 'analytics, model design and production AI architecture.';
+  var SECTORS = 'insurance|banking|bank|steel|manufacturing|healthcare|financial services';
+  var SPEND = 'cost sav\\w*|saving\\w* software|spend analytic\\w*|spend visibilit\\w*|'
+            + 'spend manage\\w*|spend intelligence|spend data|procurement analytic\\w*|'
+            + 'cost reduction|reduce (?:our |their |your )?(?:cost\\w*|spend)';
+  var CLARIFY = [
+    /* Yes — this one we do, through the partnership. */
+    { re: new RegExp('(?:sell|resell|provide|offer|supply|have|do|does|can|help(?:\\s+with)?)'
+                     + '\\b[^?]{0,30}\\b(?:' + SPEND + ')', 'i'),
+      view: 'platform',
+      link: 'the CXO Nexus platform',
+      offer: true,
+      a: function () {
+        return 'Yes — we partner with CXO Nexus to provide this capability. Riverton implements ' +
+               'their enterprise spend analytics platform: we deploy it, integrate it with your ' +
+               'source systems, design the taxonomy it runs on, and make sure the numbers hold up.';
+      } },
+
+    /* No — these are sectors our clients are in, not things we sell. */
+    { re: new RegExp('\\b(?:sell|resell|selling|provide|offer|supply)\\s+(?:\\w+\\s+){0,2}('
+                     + SECTORS + ')\\b', 'i'),
+      a: function (m) {
+        return 'No — we do not sell ' + m[1].toLowerCase() + '. ' + SERVICES +
+               ' Those are sectors our clients work in, not things we sell.';
+      } },
+    { re: new RegExp('\\bare you (?:an?\\s+)?(' + SECTORS + ')\\b', 'i'),
+      a: function (m) {
+        /* "a bank company" reads badly; each sector needs its own noun phrase. */
+        var NOUN = { bank: 'a bank', banking: 'a banking company',
+                     insurance: 'an insurance company', steel: 'a steel company',
+                     manufacturing: 'a manufacturer', healthcare: 'a healthcare company',
+                     'financial services': 'a financial services firm' };
+        var k = m[1].toLowerCase();
+        return 'No — Riverton is not ' + (NOUN[k] || 'a ' + k + ' company') + '. '
+               + SERVICES;
+      } },
+    { re: /\bwhat do you (?:actually\s+)?sell\b/i,
+      a: function () { return SERVICES; } }
+  ];
+
+  /* A direct answer that can still point at where to read more. */
+  function sayDirect(text, view, label) {
+    var d = document.createElement('div'); d.className = 'cm bot';
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Rivet';
+    var t = document.createElement('div'); t.className = 'txt';
+    t.appendChild(document.createTextNode(text));
+    if (view) {
+      var src = document.createElement('div'); src.className = 'src';
+      src.appendChild(document.createTextNode('see '));
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'srclink';
+      b.setAttribute('data-goto', view);
+      b.textContent = label || view;
+      src.appendChild(b);
+      t.appendChild(src);
+    }
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  /* ---------- follow-up ----------
+     A question about spend software is a buying question, so the answer is
+     followed by an offer rather than left hanging. Either route carries the
+     conversation with it: the email includes everything said on both sides, so
+     nobody has to retype what they already asked. */
+  var awaitingOffer = false;
+  var YES = /\b(yes|yeah|yep|sure|ok|okay|please|definitely|absolutely|sounds good|go ahead|why not)\b/i;
+  var WANTS_CALL = /\b(call|book|booking|meeting|meet|schedule|slot|talk|speak|zoom)\b/i;
+  var WANTS_MAIL = /\b(e?mail|write|send|message|contact me)\b/i;
+  var NO = /\b(no|nope|not now|later|maybe later|no thanks)\b/i;
+
+  /* Read the exchange back off the log, so the mail contains exactly what the
+     visitor saw - no separate bookkeeping to fall out of step. */
+  function conversation() {
+    var lines = [];
+    log.querySelectorAll('.cm').forEach(function (c) {
+      var who = c.querySelector('.lbl'), txt = c.querySelector('.txt');
+      if (!who || !txt) return;
+      lines.push(who.textContent.trim() + ': ' + txt.textContent.replace(/\s+/g, ' ').trim());
+    });
+    return lines;
+  }
+
+  function emailWithTranscript() {
+    var body = ['Please get in touch about spend analytics.', '',
+                'Name:', 'Company:', 'Phone (optional):', '',
+                'What we discussed on the site:', ''];
+    body = body.concat(conversation());
+    body.push('', 'Page: ' + location.href);
+    window.location.href = 'mailto:' + contactAddress()
+      + '?subject=' + encodeURIComponent('Riverton website - spend analytics enquiry')
+      + '&body=' + encodeURIComponent(body.join(String.fromCharCode(13, 10)));
+  }
+
+  function goBooking() {
+    if (BOOKING_URL) { window.open(BOOKING_URL, '_blank', 'noopener'); return; }
+    show('about', true);
+  }
+
+  function offerFollowUp() {
+    var d = document.createElement('div'); d.className = 'cm bot';
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Rivet';
+    var t = document.createElement('div'); t.className = 'txt';
+    t.appendChild(document.createTextNode(
+      'Would you like to talk it through? I can book you a call, or start an email that '
+      + 'carries this conversation with it.'));
+    var row = document.createElement('div'); row.className = 'offer';
+
+    var call = document.createElement('button');
+    call.type = 'button'; call.className = 'offer-btn js-offer-call';
+    call.textContent = 'Book a call';
+    var mail = document.createElement('button');
+    mail.type = 'button'; mail.className = 'offer-btn ghost js-offer-mail';
+    mail.textContent = 'Send an email';
+
+    row.appendChild(call); row.appendChild(mail);
+    t.appendChild(row);
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    awaitingOffer = true;
+  }
+
+  var IDX = null;
+  var MIN_SCORE = 1.6;        /* below this we say we do not know, rather than guess */
+  var STOP = ('the a an and or but if then than that this these those of in on at to for with '
+            + 'from by as is are was were be been being it its we our you your they their '
+            + 'he she his her do does did not no yes can could would should will shall may might '
+            + 'what which who whom how why when where there here about into over under out up '
+            + 'down more most some any all each every other another such own same so too very '
+            + 'just also only even much many one two').split(' ')
+              .reduce(function (m, w) { m[w] = 1; return m; }, {});
+
+  function stem(w) { return w.replace(/(ations|ation|ing|ies|ed|es|s)$/, ''); }
+  function tokens(str) {
+    return str.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/)
+      .filter(function (w) { return w.length > 2 && !STOP[w]; }).map(stem);
+  }
+  function countTokens(list) {
+    return list.reduce(function (m, t) { m[t] = (m[t] || 0) + 1; return m; }, {});
+  }
+
+  function buildIndex() {
+    var docs = [];
+    document.querySelectorAll('.view').forEach(function (v) {
+      var id = v.id.replace('view-', '');
+      var h1 = v.querySelector('h1');
+      var title = h1 ? h1.textContent.replace(/\s+/g, ' ').trim() : id;
+      var heading = title, buf = [];
+
+      function flush() {
+        var text = buf.join(' ').replace(/\s+/g, ' ').trim();
+        if (text.length > 90) {
+          docs.push({ view: id, title: title, heading: heading, text: text });
+        }
+        buf = [];
+      }
+      v.querySelectorAll('h2, h3, h4, p, li').forEach(function (el) {
+        if (el.closest('.chatdock') || el.closest('.cta')) return;
+        if (el.parentElement && el.parentElement.closest('li')) return;   /* no double count */
+        var t = el.textContent.replace(/\s+/g, ' ').trim();
+        if (!t) return;
+        if (/^H[234]$/.test(el.tagName)) { flush(); heading = t; return; }
+        buf.push(t);
+        if (buf.join(' ').length > 720) flush();
+      });
+      flush();
+    });
+
+    var df = {}, total = 0;
+    docs.forEach(function (d) {
+      var tk = tokens(d.text);
+      d.tf = countTokens(tk);
+      d.len = tk.length || 1;
+      d.head = countTokens(tokens(d.heading + ' ' + d.title));
+      total += d.len;
+      Object.keys(d.tf).forEach(function (t) { df[t] = (df[t] || 0) + 1; });
+    });
+    return { docs: docs, df: df, N: docs.length, avg: total / (docs.length || 1) };
+  }
+
+  /* BM25, with a bonus when the term appears in the heading — a section called
+     "The vendor name problem" should win the question about vendor names. */
+  function search(q, n) {
+    if (!IDX) IDX = buildIndex();
+    var qt = tokens(q);
+    if (!qt.length) return [];
+    var k1 = 1.4, b = 0.75;
+    return IDX.docs.map(function (d) {
+      var score = 0;
+      qt.forEach(function (t) {
+        var f = d.tf[t] || 0;
+        var nt = IDX.df[t] || 0;
+        if (!f && !d.head[t]) return;
+        var idf = Math.log(1 + (IDX.N - nt + 0.5) / (nt + 0.5));
+        if (f) score += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * d.len / IDX.avg));
+        if (d.head[t]) score += idf * 0.9;
+      });
+      return { d: d, score: score };
+    }).filter(function (r) { return r.score > 0; })
+      .sort(function (a, b2) { return b2.score - a.score; })
+      .slice(0, n);
+  }
+
+  function trimToSentence(text, max) {
+    if (text.length <= max) return text;
+    var cut = text.slice(0, max);
+    var i = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! '));
+    return i > max * 0.45 ? cut.slice(0, i + 1) : cut.replace(/\s+\S*$/, '') + '…';
+  }
+
+  function sourceLink(hit) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'srclink';
+    b.setAttribute('data-goto', hit.d.view);
+    b.textContent = hit.d.heading && hit.d.heading !== hit.d.title
+      ? hit.d.title + ' · ' + hit.d.heading : hit.d.title;
+    return b;
+  }
+
+  function answerFrom(hits) {
+    var d = document.createElement('div'); d.className = 'cm bot';
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Rivet';
+    var t = document.createElement('div'); t.className = 'txt';
+    t.appendChild(document.createTextNode(trimToSentence(hits[0].d.text, 360)));
+
+    var src = document.createElement('div'); src.className = 'src';
+    src.appendChild(document.createTextNode('from '));
+    src.appendChild(sourceLink(hits[0]));
+    t.appendChild(src);
+
+    var more = hits.slice(1).filter(function (h) { return h.score >= MIN_SCORE * 0.6; });
+    if (more.length) {
+      var also = document.createElement('div'); also.className = 'src';
+      also.appendChild(document.createTextNode('also in '));
+      more.forEach(function (h, i) {
+        if (i) also.appendChild(document.createTextNode(' · '));
+        also.appendChild(sourceLink(h));
+      });
+      t.appendChild(also);
+    }
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  /* Out of scope. Say so plainly and hand them the route that reaches a person. */
+  function outOfScope() {
+    var d = document.createElement('div'); d.className = 'cm bot';
+    var l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Rivet';
+    var t = document.createElement('div'); t.className = 'txt';
+    t.appendChild(document.createTextNode(
+      'I could not find that on this site or in the white papers, and I only answer from those. '));
+    var a = document.createElement('button');
+    a.type = 'button'; a.className = 'chat-mail'; a.setAttribute('data-mail', 'conversation');
+    a.textContent = 'Email us';
+    t.appendChild(a);
+    t.appendChild(document.createTextNode(' and a person will answer.'));
+    d.appendChild(l); d.appendChild(t); log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
   function reply(text) {
     var hit = null;
     SCRIPT.forEach(function (p) { if (p[0] === text) hit = p[1]; });
@@ -3712,20 +4007,49 @@ function contactTel()     { return TEL_PARTS.join(''); }
       return;
     }
 
-    pending.push(text);
-    if (visitorEmail) {                            // already know them, just send
-      say('Noted — adding that to your message.', 260);
-      setTimeout(deliver, reduce ? 0 : 700);
-    } else {
-      awaitingEmail = true;
-      say('Noted. I cannot answer that one myself, but I will put it in front of a person — ' +
-          'what is the best email to reach you on?');
+    /* Did we just offer a call or an email? Take the answer before anything else. */
+    if (awaitingOffer) {
+      awaitingOffer = false;
+      if (NO.test(text) && !YES.test(text)) {
+        say('No problem — ask me anything else, or come back to it whenever you like.');
+        return;
+      }
+      if (WANTS_CALL.test(text)) { say('Opening the calendar now.', 200);
+                                   setTimeout(goBooking, reduce ? 0 : 420); return; }
+      if (WANTS_MAIL.test(text) || YES.test(text)) {
+        say('Opening an email with this conversation attached.', 200);
+        setTimeout(emailWithTranscript, reduce ? 0 : 420); return;
+      }
+      /* not an answer to the offer - fall through and treat it as a question */
     }
+
+    /* Answer the misreadable questions directly, before retrieval can find a
+       passage that merely contains the word. */
+    for (var ci = 0; ci < CLARIFY.length; ci++) {
+      var rule = CLARIFY[ci], mm = rule.re.exec(text);
+      if (mm) {
+        var ans = rule.a(mm);
+        setTimeout(sayDirect, reduce ? 0 : 320, ans, rule.view, rule.link);
+        if (rule.offer) setTimeout(offerFollowUp, reduce ? 0 : 900);
+        return;
+      }
+    }
+
+    /* Look it up in the site and the papers before troubling a person. */
+    var hits = search(text, 3);
+    if (hits.length && hits[0].score >= MIN_SCORE) {
+      setTimeout(answerFrom, reduce ? 0 : 360, hits);
+      return;
+    }
+
+    setTimeout(outOfScope, reduce ? 0 : 360);
   }
 
   function seed() {
     log.innerHTML = ''; chips.innerHTML = '';
-    bubble('Rivet', 'Hello — I am Rivet, Riverton\u2019s data agent. I can explain what we build, how we approach a problem, or what the spend platform surfaces. Where would you like to start?');
+    bubble('Rivet', 'Hello — I am Rivet. I answer from this site and Riverton\u2019s white ' +
+      'papers, and nothing else: I quote what is written rather than making anything up. ' +
+      'Ask me about the work, the method, or the spend platform.');
     SCRIPT.forEach(function (p) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'chip'; b.textContent = p[0];
