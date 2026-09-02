@@ -197,6 +197,15 @@
   .prob .out .txt { color:var(--data); }
   .sector-pill { display:inline-block; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
                  color:var(--accent); border:1px solid var(--line-2); padding:.2rem .5rem; margin-bottom:.8rem; }
+  .prob-dots { display:flex; align-items:center; gap:.42rem; padding:0 1.2rem 1.15rem; }
+  .prob-dots button { width:9px; height:9px; padding:0; border-radius:50%; cursor:pointer;
+                      background:transparent; border:1px solid var(--line-2);
+                      transition:background .18s, border-color .18s; }
+  .prob-dots button:hover { border-color:var(--accent); }
+  .prob-dots button[aria-current="true"] { background:var(--accent); border-color:var(--accent); }
+  .prob-dots button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  /* Wider gap at each sector boundary, so one sector's cases read as a group. */
+  .prob-dots button.sec-start { margin-left:.5rem; }
 
   .stats { display:flex; flex-wrap:wrap; gap:2.2rem; margin-top:2.4rem;
            padding-top:1.5rem; border-top:1px solid var(--line); }
@@ -713,13 +722,13 @@
           <div class="stats">
             <div class="stat"><div class="k">Millions</div><div class="l">Saved annually, IBM&nbsp;/ AK Steel expert system</div></div>
             <div class="stat"><div class="k">5</div><div class="l">Enterprise systems delivered into production</div></div>
-            <div class="stat"><div class="k">3</div><div class="l">Sectors of deep domain practice</div></div>
+            <div class="stat"><div class="k">4</div><div class="l">Sectors of deep domain practice</div></div>
           </div>
         </div>
 
         <div class="panel" aria-label="Business problems we solve, by sector">
           <div class="panel-bar"><span class="dot live"></span> Problem → system → outcome
-            <span class="tag" id="sector-tag">1 / 3</span></div>
+            <span class="tag" id="sector-tag">1 / 7</span></div>
           <div class="prob">
             <span class="sector-pill" id="p-sector">Financial</span>
             <div class="stage-l">The business problem</div>
@@ -733,6 +742,7 @@
               <div class="txt" id="p-outcome">—</div>
             </div>
           </div>
+          <div class="prob-dots" id="sector-dots" aria-label="Choose a problem"></div>
         </div>
       </div>
     </header>
@@ -864,18 +874,24 @@
     <section>
       <div class="wrap">
         <div class="sec-head"><h2>Sector depth</h2></div>
-        <p class="sec-lede">Domain knowledge is not optional. These are the industries where we
+        <p class="sec-lede">Domain knowledge is not optional. These are the domains where we
           have built systems that went into production and stayed there.</p>
-        <div class="grid3">
+        <!-- grid2, not grid3: four cells fill a 2-column grid exactly at every
+             breakpoint, where three columns would leave a part-filled row
+             showing as a solid block of the line colour. -->
+        <div class="grid2">
           <div class="cell"><span class="n">Financial services</span><h3>Fraud, security, behavior</h3>
             <p>Detecting fraudulent activity through user behavior analysis; security enhancement;
                abnormal behavior analysis across accounts and transactions.</p></div>
-          <div class="cell"><span class="n">Insurance</span><h3>Claims and cost</h3>
-            <p>Streamlining claims processing, identifying anomalies in claims to cut cost, and
-               reducing leakage before payment.</p></div>
           <div class="cell"><span class="n">Manufacturing</span><h3>Routing and uptime</h3>
             <p>Optimizing production scheduling and routing for maximum efficiency, reducing
                downtime and improving throughput.</p></div>
+          <div class="cell"><span class="n">Insurance</span><h3>Claims and cost</h3>
+            <p>Streamlining claims processing, identifying anomalies in claims to cut cost, and
+               reducing leakage before payment.</p></div>
+          <div class="cell"><span class="n">Human resources</span><h3>Attrition and retention</h3>
+            <p>Predicting which people are likely to leave while there is still time to respond,
+               and surfacing where performance problems are going unaddressed.</p></div>
         </div>
       </div>
     </section>
@@ -3564,31 +3580,84 @@ function revealTel(btn) {
   show((location.hash || '#home').slice(1), false);
 
   /* ---------- home: sector problem cycle ---------- */
+  /* Each sector holds one or more cases. A sector with several simply keeps the
+     pill for several turns, so the four spend problems read as one group rather
+     than as four unrelated cards. */
   var SECTORS = [
-    { s:'Financial services',
-      p:'Fraudulent activity is buried inside ordinary-looking customer and transaction behavior, and rules-based checks only catch what somebody already thought of.',
-      y:'Behavioral models that learn each customer’s normal pattern and score deviation continuously, wired into the transaction path.',
-      o:'Fraud caught on behavior rather than on rules — deployed into the live transaction path at USAA.' },
-    { s:'Insurance',
-      p:'Claims cost more than they should, and the anomalies that explain why are only visible long after the money has gone out the door.',
-      y:'Anomaly detection across claims processing, scoring each claim against its own cohort before payment rather than after.',
-      o:'Streamlined claims handling and measurable cost reduction per claim.' },
-    { s:'Manufacturing',
-      p:'Production routing and scheduling are set by convention, leaving capacity unused and downtime absorbed as a cost of doing business.',
-      y:'Optimization models over routing and scheduling, fed by live plant data and retrained as the line changes.',
-      o:'Higher throughput and reduced downtime — the pattern behind millions in annual savings at AK Steel.' }
+    { s:'Financial services', cases:[
+      { p:'One supplier arrives under dozens of spellings across AP, card and expense feeds, so the top-ten supplier list reconciles to the ledger and is still wrong about who you actually pay.',
+        y:'Entity resolution that scores tax IDs, addresses and banking detail as well as the name, resolving every record to one legal entity with parentage above it.',
+        o:'Fragmented spend consolidated to the real counterparty, so leverage is negotiated on the true number.' },
+      { p:'Technology bought outside IT posts to departmental expense codes under approval thresholds, so no operational system knows the tool exists and no report counts it as technology.',
+        y:'Line-item classification joined to the asset register, the CMDB and the SSO directory — the gap between what is paid for and what is known about.',
+        o:'Unsanctioned technology spend quantified, then brought under contract and offboarding.' },
+      { p:'Hardware bought through VARs and marketplaces hides the manufacturer behind the invoice, so volume with one OEM looks like scattered purchases from a dozen intermediaries.',
+        y:'Reseller unmasking that attributes each line to the manufacturer whose product was actually bought, rolled up to the ultimate parent.',
+        o:'True manufacturer spend made visible, so an OEM is negotiated as one relationship rather than a dozen.' },
+      { p:'Fraudulent activity is buried inside ordinary-looking customer and transaction behavior, and rules-based checks only catch what somebody already thought of.',
+        y:'Behavioral models that learn each customer’s normal pattern and score deviation continuously, wired into the transaction path.',
+        o:'Fraud caught on behavior rather than on rules — deployed into the live transaction path at USAA.' }
+    ] },
+    { s:'Manufacturing', cases:[
+      { p:'Production routing and scheduling are set by convention, leaving capacity unused and downtime absorbed as a cost of doing business.',
+        y:'Optimization models over routing and scheduling, fed by live plant data and retrained as the line changes.',
+        o:'Higher throughput and reduced downtime — the pattern behind millions in annual savings at AK Steel.' }
+    ] },
+    { s:'Insurance', cases:[
+      { p:'Claims cost more than they should, and the anomalies that explain why are only visible long after the money has gone out the door.',
+        y:'Anomaly detection across claims processing, scoring each claim against its own cohort before payment rather than after.',
+        o:'Streamlined claims handling and measurable cost reduction per claim.' }
+    ] },
+    /* Client not named at their request — the outcome is stated without one. */
+    { s:'Human resources', cases:[
+      { p:'The people you can least afford to lose decide months before they resign, and the signals sit scattered across systems nobody joins together — so the first anyone hears of it is the notice period.',
+        y:'A model over work patterns, evaluation history, manager and team context, and external market demand for each role, scoring likelihood to leave and refreshing it as conditions change.',
+        o:'Retention risk surfaced early enough to act on, and the same signals showing where performance problems were going unaddressed.' }
+    ] }
   ];
+
+  /* Flattened once at load: the rotator only ever walks a plain list. */
+  var CARDS = [];
+  SECTORS.forEach(function (sec) {
+    sec.cases.forEach(function (c) {
+      CARDS.push({ s: sec.s, p: c.p, y: c.y, o: c.o });
+    });
+  });
   var si = 0;
   var el = { s:document.getElementById('p-sector'), p:document.getElementById('p-problem'),
              y:document.getElementById('p-system'), o:document.getElementById('p-outcome'),
              t:document.getElementById('sector-tag') };
+  var dots = [];
+  var rot = null;
   function paintSector(i) {
-    var r = SECTORS[i];
+    var r = CARDS[i];
     el.s.textContent = r.s; el.p.textContent = r.p; el.y.textContent = r.y; el.o.textContent = r.o;
-    el.t.textContent = (i + 1) + ' / ' + SECTORS.length;
+    el.t.textContent = (i + 1) + ' / ' + CARDS.length;
+    dots.forEach(function (d, j) { d.setAttribute('aria-current', j === i ? 'true' : 'false'); });
   }
+
+  /* One dot per card, built from CARDS so the strip cannot fall out of step
+     with the list. Sector boundaries get a wider gap. */
+  (function buildDots() {
+    var wrap = document.getElementById('sector-dots');
+    if (!wrap) return;
+    CARDS.forEach(function (c, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', c.s + ', ' + (i + 1) + ' of ' + CARDS.length);
+      if (i && c.s !== CARDS[i - 1].s) b.className = 'sec-start';
+      b.addEventListener('click', function () {
+        /* A click is the reader taking over. Stop rotating rather than pulling
+           the card they just chose out from under them a few seconds later. */
+        if (rot) { clearInterval(rot); rot = null; }
+        si = i; paintSector(si);
+      });
+      wrap.appendChild(b); dots.push(b);
+    });
+  })();
+
   paintSector(0);
-  if (!reduce) setInterval(function () { si = (si + 1) % SECTORS.length; paintSector(si); }, 6000);
+  if (!reduce) rot = setInterval(function () { si = (si + 1) % CARDS.length; paintSector(si); }, 6000);
 
   /* ---------- platform: record transformation ---------- */
   var STAGES = [
@@ -3747,7 +3816,11 @@ function revealTel(btn) {
      Add a pattern here whenever retrieval gives a misleading reading. */
   var SERVICES = 'We provide software and analysis services — data engineering, advanced ' +
                  'analytics, model design and production AI architecture.';
-  var SECTORS = 'insurance|banking|bank|steel|manufacturing|healthcare|financial services';
+  /* SECTOR_WORDS, not SECTORS: the home-page rotator already owns that name in
+     this same IIFE, and a second var of it silently replaced the array with
+     this string — the panel went blank and the counter read '13 / 72', the
+     length of this string. */
+  var SECTOR_WORDS = 'insurance|banking|bank|steel|manufacturing|healthcare|financial services';
   var SPEND = 'cost sav\\w*|saving\\w* software|spend analytic\\w*|spend visibilit\\w*|'
             + 'spend manage\\w*|spend intelligence|spend data|procurement analytic\\w*|'
             + 'cost reduction|reduce (?:our |their |your )?(?:cost\\w*|spend)';
@@ -3766,12 +3839,12 @@ function revealTel(btn) {
 
     /* No — these are sectors our clients are in, not things we sell. */
     { re: new RegExp('\\b(?:sell|resell|selling|provide|offer|supply)\\s+(?:\\w+\\s+){0,2}('
-                     + SECTORS + ')\\b', 'i'),
+                     + SECTOR_WORDS + ')\\b', 'i'),
       a: function (m) {
         return 'No — we do not sell ' + m[1].toLowerCase() + '. ' + SERVICES +
                ' Those are sectors our clients work in, not things we sell.';
       } },
-    { re: new RegExp('\\bare you (?:an?\\s+)?(' + SECTORS + ')\\b', 'i'),
+    { re: new RegExp('\\bare you (?:an?\\s+)?(' + SECTOR_WORDS + ')\\b', 'i'),
       a: function (m) {
         /* "a bank company" reads badly; each sector needs its own noun phrase. */
         var NOUN = { bank: 'a bank', banking: 'a banking company',
