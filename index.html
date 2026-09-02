@@ -546,6 +546,8 @@
   .contact-acts { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:auto; padding-top:1rem; }
   .contact-acts .btn { font-size:.66rem; padding:.5rem .8rem; }
   .contact-note { color:var(--faint); font-size:.8rem !important; margin-top:.6rem; }
+  .tel-reveal { font-family:var(--mono); font-size:.72rem; letter-spacing:.04em;
+                color:var(--ink); align-self:center; }
 
   /* Rivet is scripted and, until CAPTURE_ENDPOINT is set, cannot deliver a
      message on its own. The way out has to be visible from the start rather
@@ -3070,7 +3072,7 @@
             <p>Bring us a business challenge and we will come back with a view on whether it is
                worth building — including when the answer is no.</p>
             <div class="contact-acts">
-              <button type="button" class="btn" data-mail="short">Email us</button>
+              <button type="button" class="btn" data-mail="conversation">Send us a brief</button>
               <button type="button" class="btn ghost js-chat-open">Ask Rivet</button>
             </div>
           </div>
@@ -3216,6 +3218,20 @@ var TEL_PARTS = ['+1', '210', '602', '9320'];
 function contactAddress() { return MAIL_USER + String.fromCharCode(64) + MAIL_HOST; }
 function contactTel()     { return TEL_PARTS.join(''); }
 
+/* A tel: handoff reports nothing back — a launched dialler and a desktop with no
+   handler at all look identical to the page. So rather than guess, show the
+   number every time: on a phone it is a harmless receipt, and on a laptop with
+   nothing registered it is the only thing that happens. It reaches the DOM only
+   after a real click, so a passive scraper still never sees it. */
+function revealTel(btn) {
+  var host = btn.parentElement;
+  if (!host || host.querySelector('.tel-reveal')) return;
+  var span = document.createElement('span');
+  span.className = 'tel-reveal';
+  span.textContent = 'or dial ' + TEL_PARTS.join(' ');
+  host.appendChild(span);
+}
+
 (function () {
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var VIEWS = ['home','capabilities','approach','platform','bastionx','securetsi','blog',
@@ -3300,7 +3316,7 @@ function contactTel()     { return TEL_PARTS.join(''); }
     var m = e.target.closest('[data-mail]');
     if (m) { window.location.href = mailHref(m.getAttribute('data-mail')); return; }
     var t = e.target.closest('[data-tel]');
-    if (t) { window.location.href = 'tel:' + contactTel(); }
+    if (t) { revealTel(t); window.location.href = 'tel:' + contactTel(); }
   });
 
   /* Delegated, not bound per element: the blog cards are generated, so anything
