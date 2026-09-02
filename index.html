@@ -657,7 +657,7 @@
           <button type="button" class="icon-btn sm" data-mail="short" data-tip="Email us"
                   aria-label="Email Riverton and Associates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="m2.9 6.4 9.1 5.9 9.1-5.9"/></svg></button>
         </span>
-        <button type="button" class="btn js-book">Book a call</button>
+        <a class="btn js-book" href="#about">Book a call</a>
         <span class="icon-actions top">
           <button type="button" class="icon-btn sm js-chat-open" data-tip="Chat with Rivet"
                   aria-label="Chat with Rivet, our data agent" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.5L3 21l1.7-5.1A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg></button>
@@ -3180,7 +3180,7 @@ var CAPTURE_ENDPOINT = '';
    While it is empty the button falls back to the contact block on About,
    so it always leads somewhere real rather than nowhere.
    ==================================================================== */
-var BOOKING_URL = 'https://calendly.com/barrington-young/15min';
+var BOOKING_URL = 'https://calendly.com/barrington-young/30min';
 
 /* ====================================================================
    CONTACT DETAILS -- kept in pieces on purpose.
@@ -3291,11 +3291,14 @@ function contactTel()     { return TEL_PARTS.join(''); }
   document.addEventListener('click', function (e) {
     if (!e.target || !e.target.closest) return;
 
-    /* Book a call. Until BOOKING_URL is set, send them to the contact block on
-       About rather than to a button that does nothing. */
+    /* Book a call. When BOOKING_URL is set the button is a real link and the
+       browser opens it — window.open was reachable by pop-up blockers, and it
+       also broke middle-click and open-in-new-tab. Without a URL it falls back
+       to the contact block on About. */
     var bk = e.target.closest('.js-book');
     if (bk) {
-      if (BOOKING_URL) { window.open(BOOKING_URL, '_blank', 'noopener'); return; }
+      if (BOOKING_URL) return;              /* a genuine href; let the browser do it */
+      e.preventDefault();
       show('about', true);
       var c = document.querySelector('#view-about .contact-grid');
       if (c) setTimeout(function () { c.scrollIntoView({ block: 'start' }); }, 60);
@@ -3312,6 +3315,16 @@ function contactTel()     { return TEL_PARTS.join(''); }
      One list drives both the featured panel and the grid, so publishing a paper
      is a single entry here plus its view. Newest is featured; the next GRID_MAX
      fill the grid. Past that the grid scrolls and a search box appears. */
+  /* One place holds the URL; the anchor gets it here so the markup and the
+     constant cannot drift apart. */
+  if (BOOKING_URL) {
+    document.querySelectorAll('.js-book').forEach(function (a) {
+      a.setAttribute('href', BOOKING_URL);
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    });
+  }
+
   var GRID_MAX = 6;
   var PAPERS = [
     { id: 'whitepaper', cat: 'White paper', date: '2026-08-31', read: '5 min read',
