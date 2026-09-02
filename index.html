@@ -391,6 +391,30 @@
             padding:clamp(2.4rem,5vw,3.8rem) 0; }
   @media (max-width:820px){ .cta-in{ grid-template-columns:1fr } }
   .cta p { color:var(--muted); margin:.65rem 0 0; max-width:48ch; }
+
+  /* Solution lanes — the diagram is the section, so it gets its own register:
+     a different ground, edge to edge, with air around it. Twelve cells read as
+     a table without that separation. */
+  section.band { background:var(--surface); }
+  #solution-lanes { margin:1.4rem 0 0; }
+  #solution-lanes svg { display:block; width:100%; height:auto; }
+  .lanes-list { display:none; }
+  @media (max-width:760px) {
+    #solution-lanes svg { display:none; }
+    .lanes-list { display:block; font-family:var(--mono); font-size:.82rem; }
+    .ll-cap { color:var(--accent); text-transform:uppercase; letter-spacing:.12em;
+              font-size:.68rem; padding:.7rem 0; }
+    .ll-cap.ll-in { border-bottom:1px solid var(--line); }
+    .ll-cap.ll-out { border-top:1px solid var(--line); }
+    .ll-lane { padding:1rem 0; border-bottom:1px solid var(--line); }
+    .ll-lane:last-of-type { border-bottom:0; }
+    .ll-lane .n { display:block; color:var(--accent); text-transform:uppercase;
+                  letter-spacing:.14em; font-size:.64rem; margin-bottom:.5rem; }
+    .ll-lane ol { margin:0; padding-left:1.1rem; color:var(--muted); }
+    .ll-lane li { margin:.22rem 0; }
+    .ll-lane em { color:var(--faint); font-style:normal; letter-spacing:.06em;
+                  text-transform:uppercase; font-size:.66rem; margin-right:.45rem; }
+  }
   footer.site { border-top:1px solid var(--line); padding:2rem 0 2.8rem; }
   .foot-in { display:flex; flex-wrap:wrap; gap:1rem 2.2rem; align-items:center; }
   .foot-in .contact { font-family:var(--mono); font-size:.75rem; color:var(--muted);
@@ -1074,24 +1098,16 @@
       </div>
     </section>
 
-    <section>
+    <!-- The lanes replace the four outcome cells that used to sit here: those
+         were the same four phases restated one line each, so keeping both
+         would have said the same thing twice. -->
+    <section class="band">
       <div class="wrap">
         <div class="sec-head"><h2>What the method delivers</h2></div>
-        <div class="grid4">
-          <div class="cell"><span class="n">Clarity</span><h3>A focused problem</h3>
-            <p>A measurable challenge worth solving, with an achievable target agreed before
-               investment.</p></div>
-          <div class="cell"><span class="n">Readiness</span><h3>Data and process</h3>
-            <p>Data that is ready and well managed, with the pipeline and the people to keep it
-               that way.</p></div>
-          <div class="cell"><span class="n">Proof</span><h3>A working prototype</h3>
-            <p>Evidence at small scale that the approach delivers, before the commitment is
-               made.</p></div>
-          <div class="cell"><span class="n">Scale</span><h3>Production and feedback</h3>
-            <p>Deployed into the systems that use it, monitored and improved as conditions
-               change.</p></div>
-        </div>
-        <p class="sec-lede" style="margin:2rem 0 0">The outcome is the point: improved security,
+        <p class="sec-lede">Three strands, worked at the same time from the same problem. The
+          work is not finished until all three arrive.</p>
+        <div id="solution-lanes"></div>
+        <p class="sec-lede" style="margin:2.2rem 0 0">The outcome is the point: improved security,
           reduced cost, and measurably better operational efficiency — not a model that performs
           well in a notebook.</p>
       </div>
@@ -4167,6 +4183,7 @@ function revealTel(btn) {
 </script>
 <script src="d3.v7.min.js"></script>
 <script src="spend-pipeline.js"></script>
+<script src="solution-lanes.js"></script>
 <script>
   /* Compact pipeline rail in the CXO Nexus hero. Guarded so a missing D3 or
      module file degrades to an empty panel rather than breaking the page. */
@@ -4176,6 +4193,13 @@ function revealTel(btn) {
     if (el) renderSpendPipeline(el, { variant: 'compact' });
     var ac = document.getElementById('spend-access');
     if (ac) renderSpendPipeline(ac, { variant: 'access' });
+  })();
+
+  /* People / process / technology lanes on the approach page. */
+  (function () {
+    if (typeof renderSolutionLanes !== 'function') return;
+    var el = document.getElementById('solution-lanes');
+    if (el) renderSolutionLanes(el);
   })();
 </script>
 </body>
