@@ -72,11 +72,24 @@
          border-bottom:1px solid var(--line); }
   .nav-top { max-width:var(--col); margin:0 auto; padding:.8rem clamp(1.1rem,4vw,2.5rem);
              display:flex; align-items:center; gap:1.2rem; }
-  .mark { display:flex; align-items:center; gap:.7rem; margin-right:auto; }
+  .mark { display:flex; align-items:center; margin-right:auto; }
+
+  /* The bracket device. In the logo it is a pair of opposing corners framing the
+     whole lockup — top-left and bottom-right — not a box around the monogram,
+     which is what this used to draw. Both arms of each corner are equal length,
+     as they are in the artwork. */
+  .lockup { position:relative; display:flex; align-items:center; gap:.7rem;
+            padding:.5rem .78rem; }
+  .lockup::before, .lockup::after { content:''; position:absolute;
+                                    width:13px; height:13px; pointer-events:none; }
+  .lockup::before { top:0; left:0;
+                    border-top:2px solid var(--accent); border-left:2px solid var(--accent); }
+  .lockup::after  { right:0; bottom:0;
+                    border-right:2px solid var(--accent); border-bottom:2px solid var(--accent); }
+
   .mono-badge { font-family:var(--serif); font-size:1.05rem; font-weight:700; line-height:1;
-                border-top:2px solid var(--accent); border-left:2px solid var(--accent);
-                padding:.26rem .5rem .16rem; }
-  .mono-badge em { color:var(--accent); font-style:normal; }
+                letter-spacing:.06em; }
+  .mono-badge em { color:var(--accent); font-style:normal; margin:0 .06em; }
   .wordmark { font-size:.76rem; font-weight:700; letter-spacing:.15em; }
   .wordmark em { color:var(--accent); font-style:normal; }
   @media (max-width:560px){ .wordmark{ display:none } }
@@ -500,6 +513,29 @@
   .cell.post button.more { background:none; border:0; padding:.6rem 0 0; text-align:left;
                            cursor:pointer; align-self:flex-start; }
   .cell.post button.more:hover { color:var(--accent-d); text-decoration:underline; }
+  /* The footer is where a full logo belongs and where there is room for all
+     four elements: both brackets, the monogram, the wordmark and the slogan.
+     The header cannot carry the slogan at 28px of height without crowding. */
+  .logo-lockup { position:relative; display:flex; flex-direction:column; align-items:center;
+                 gap:.42rem; padding:.85rem 1.5rem 1rem; text-align:center; }
+  /* Arm length is set from the artwork, where each corner is 101px square on a
+     227px-tall lockup — about 44% of the height. At 22px they read as ticks
+     rather than as a frame. */
+  .logo-lockup::before, .logo-lockup::after { content:''; position:absolute;
+                                              width:46px; height:46px; }
+  .logo-lockup::before { top:0; left:0;
+                         border-top:2px solid var(--accent); border-left:2px solid var(--accent); }
+  .logo-lockup::after  { right:0; bottom:0;
+                         border-right:2px solid var(--accent); border-bottom:2px solid var(--accent); }
+  .ll-mark { font-family:var(--serif); font-size:1.5rem; font-weight:700; line-height:1;
+             letter-spacing:.07em; }
+  .ll-mark em { color:var(--accent); font-style:normal; margin:0 .06em; }
+  .ll-word { font-size:.7rem; font-weight:700; letter-spacing:.19em; }
+  .ll-word em { color:var(--accent); font-style:normal; }
+  /* Larger than the wordmark and in the serif, as it is in the artwork. */
+  .ll-slogan { font-family:var(--serif); font-size:.98rem; color:var(--muted);
+               margin-top:.15rem; }
+
   .foot-in .rights { margin-left:auto; font-family:var(--mono); font-size:.69rem; color:var(--faint); }
 
   /* The white paper is the only view that is simply text rather than cards and
@@ -695,8 +731,10 @@
   <nav class="nav">
     <div class="nav-top">
       <div class="mark">
-        <span class="mono-badge">R<em>&amp;</em>A</span>
-        <span class="wordmark">RIVERTON <em>&amp;</em> ASSOCIATES, INC.</span>
+        <span class="lockup">
+          <span class="mono-badge">R <em>&amp;</em> A</span>
+          <span class="wordmark">RIVERTON <em>&amp;</em> ASSOCIATES</span>
+        </span>
       </div>
       <span class="nav-actions">
         <span class="icon-actions top">
@@ -3133,14 +3171,18 @@
 
   <footer class="site">
     <div class="wrap foot-in">
-      <span class="mono-badge">R<em>&amp;</em>A</span>
+      <span class="logo-lockup">
+        <span class="ll-mark">R <em>&amp;</em> A</span>
+        <span class="ll-word">RIVERTON <em>&amp;</em> ASSOCIATES</span>
+        <span class="ll-slogan">Bring Data To Life</span>
+      </span>
       <span class="contact">
         <span class="contact-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10.4c0 5.6-8 11.6-8 11.6s-8-6-8-11.6a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10.2" r="2.9"/></svg>
           2605 Dupree Circle, Austin TX 78748
         </span>
       </span>
-      <span class="rights">Bring Data To Life</span>
+      <span class="rights">&copy; 2026 Riverton &amp; Associates, Inc.</span>
     </div>
   </footer>
 
